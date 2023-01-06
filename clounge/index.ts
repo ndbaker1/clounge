@@ -3,22 +3,13 @@ export type Vector2D = {
     y: number,
 };
 
-export type CursorData = {
-    pressed: boolean,
-} & Vector2D;
+export type ObjectData = Vector2D;
 
-export type ObjectData = {} & Vector2D;
-
-export type PeerData = {
-    name: string,
-    cursor: CursorData,
-}
-export type ConnectedPeerData = PeerData & {
+export type ConnectedPeerData = {
     connection: {
         send: (data: any) => void;
     }
 };
-
 
 type PeerID = string;
 
@@ -30,14 +21,14 @@ export type RoomData<
     BaseExtension &
     {
         peers: Record<PeerID, ConnectedPeerData & PeerExtension>,
-        self: PeerData & { id: PeerID } & PeerExtension,
+        self: { id: PeerID } & PeerExtension,
         objects: Record<number, ObjectExtension>,
     };
 
 /**
  * Custom handlers for a room
  */
-export type RoomMod<State = any, A = {}, B = {}, C extends ObjectData = ObjectData> = {
+export type RoomPlugin<State = any, A = {}, B = {}, C extends ObjectData = ObjectData> = {
     state?: State,
     selfSetup?(room: RoomData<A, B, C>): void;
     peerSetup?(room: RoomData<A, B, C>, peerId: PeerID): void;

@@ -1,11 +1,13 @@
-import { RoomMod } from "index";
+import { RoomPlugin } from "index";
 
 export type SyncMessage = {
     type: 'identification';
     name: string;
 };
 
-export default function mod(): RoomMod {
+export type RoomExtension = { name: string };
+
+export default function plugin(): RoomPlugin<null, RoomExtension> {
     const canvas = document.createElement('div');
     document.body.appendChild(canvas);
 
@@ -21,6 +23,9 @@ export default function mod(): RoomMod {
                 name: room.self.name
             } as SyncMessage);
         },
+        selfSetup(room) {
+            room.self.name = prompt("name?") || "noname";
+        }
     };
 }
 

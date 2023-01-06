@@ -1,14 +1,20 @@
-import { CursorData, RoomData, RoomMod, Vector2D } from "index";
-import { SyncMessage } from "./syncMod";
+import { RoomData, RoomPlugin, Vector2D } from "index";
+import { SyncMessage, RoomExtension as NameRoomExtension } from "./namePlugin";
+
+export type CursorData = {
+    pressed: boolean,
+} & Vector2D;
 
 export type MouseUpdate = {
     type: 'mouse';
-    position: CursorData;
+    data: CursorData;
 };
 
-type RoomExtension = { cursorElement: HTMLElement };
+type CursorPluginData = { cursorElement: HTMLElement } & { cursor: CursorData };
 
-export default function mod(): RoomMod<null, RoomExtension> {
+export type RoomExtension = CursorPluginData & NameRoomExtension;
+
+export default function plugin(): RoomPlugin<null, RoomExtension> {
     const canvas = document.createElement('div');
     document.body.appendChild(canvas);
 
@@ -31,24 +37,10 @@ export default function mod(): RoomMod<null, RoomExtension> {
                 canvas?.appendChild(cursorElement);
                 room.peers[peerId].cursorElement = cursorElement;
             } else if (data?.type === 'mouse') {
-                moveCursor(data.position, peerId, room);
+                moveCursor(data.data, peerId, room);
             }
         },
         selfSetup(room) {
-            window.addEventListener('mousemove', ({ clientX, clientY }) => {
-                room.self.cursor.x = clientX;
-                room.self.cursor.y = clientY;
-
-                for (const id in room.peers) {
-                    room.peers[id].connection.send({
-                        type: 'mouse',
-                        position: room.self.cursor
-                    } as MouseUpdate);
-                }
-
-                moveCursor({ x: clientX, y: clientY }, room.self.id, room, true);
-            });
-
             const cursorElement = document.createElement('div');
             const cursorImage = document.createElement('img');
             const txt = document.createElement('p');
@@ -65,10 +57,41 @@ export default function mod(): RoomMod<null, RoomExtension> {
             cursorElement.appendChild(txt);
             canvas?.appendChild(cursorElement);
             room.self.cursorElement = cursorElement;
+            room.self.cursor = { x: 0, y: 0, pressed: false };
 
             // hacky way to remove the cursor in all cases
-            document.head.innerHTML += `<style type="text/css">* { cursor: none; }</style>`;
-        }
+            document.head.innerHTML += `
+            <style type="text/css">
+                * { cursor: none; }
+
+                .cursor {
+                    position: absolute;
+                    user-select: none;
+                    pointer-events: none;
+
+                    margin-left: -16px;
+                    margin-top: -10px;
+                }
+            </style>
+            `;
+
+            window.addEventListener('mousemove', ({ clientX, clientY }) => {
+                room.self.cursor.x = clientX;
+                room.self.cursor.y = clientY;
+
+                for (const id in room.peers) {
+                    room.peers[id].connection.send({
+                        type: 'mouse',
+                        data: room.self.cursor
+                    } as MouseUpdate);
+                }
+
+                moveCursor({ x: clientX, y: clientY }, room.self.id, room, true);
+            });
+        },
+        peerSetup(room, peerId) {
+            room.peers[peerId].cursor = { x: 0, y: 0, pressed: false };
+        },
     };
 }
 

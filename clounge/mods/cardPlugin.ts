@@ -1,4 +1,4 @@
-import { RoomMod, Vector2D } from "index";
+import { RoomPlugin, Vector2D } from "index";
 
 type Message =
     | {
@@ -17,9 +17,7 @@ type Message =
         change: Vector2D;
     };
 
-type ModType = RoomMod;
-
-export default function mod(): ModType {
+export default function plugin(): RoomPlugin {
     const canvas = document.createElement('div');
     document.body.appendChild(canvas);
 

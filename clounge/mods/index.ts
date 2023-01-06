@@ -1,9 +1,3 @@
-import cardMod from './cardMod';
-import cursorMod from './cursorMod';
-import syncMod from './syncMod';
-
-export {
-    cardMod,
-    cursorMod,
-    syncMod,
-}
+export { default as namePlugin } from "./namePlugin";
+export { default as cursorPlugin } from "./cursorPlugin";
+export { default as cardPlugin } from "./cardPlugin";
