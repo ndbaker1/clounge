@@ -1,26 +1,20 @@
-import type { CursorData, RoomData, RoomMod, Vector2D } from 'clounge';
+import { CursorData, RoomData, RoomMod, Vector2D } from "index";
+import { SyncMessage } from "./syncMod";
 
-type DefaultMessage =
-    | {
-        type: 'identification';
-        name: string;
-    }
-    | {
-        type: 'mouse';
-        position: CursorData;
-    };
+export type MouseUpdate = {
+    type: 'mouse';
+    position: CursorData;
+};
 
 type RoomExtension = { cursorElement: HTMLElement };
-type DefaultModType = RoomMod<null, RoomExtension>;
 
-export function defaultMod(): DefaultModType {
+export default function mod(): RoomMod<null, RoomExtension> {
     const canvas = document.createElement('div');
     document.body.appendChild(canvas);
 
     return {
-        processData(room, data: DefaultMessage, peerId) {
+        processData(room, data: MouseUpdate | SyncMessage, peerId) {
             if (data?.type === 'identification') {
-                console.log('got identification:', data);
                 const cursorElement = document.createElement('div');
                 const cursorImage = document.createElement('img');
                 const txt = document.createElement('p');
@@ -36,16 +30,9 @@ export function defaultMod(): DefaultModType {
                 cursorElement.appendChild(txt);
                 canvas?.appendChild(cursorElement);
                 room.peers[peerId].cursorElement = cursorElement;
-                room.peers[peerId].name = data.name;
             } else if (data?.type === 'mouse') {
                 moveCursor(data.position, peerId, room);
             }
-        },
-        peerSetup(room, peerId) {
-            room.peers[peerId].connection.send({
-                type: 'identification',
-                name: room.self.name
-            } as DefaultMessage);
         },
         selfSetup(room) {
             window.addEventListener('mousemove', ({ clientX, clientY }) => {
@@ -56,7 +43,7 @@ export function defaultMod(): DefaultModType {
                     room.peers[id].connection.send({
                         type: 'mouse',
                         position: room.self.cursor
-                    } as DefaultMessage);
+                    } as MouseUpdate);
                 }
 
                 moveCursor({ x: clientX, y: clientY }, room.self.id, room, true);

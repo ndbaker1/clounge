@@ -4,8 +4,7 @@
 	import { type DataConnection, Peer } from 'peerjs';
 
 	import type { RoomMod, RoomData } from 'clounge';
-
-	import { defaultMod } from '$lib/defaultMod';
+	import { cardMod, cursorMod, syncMod } from 'clounge/mods';
 
 	let name: string;
 	let peer: string;
@@ -15,7 +14,7 @@
 		const self = new Peer();
 
 		// load mods
-		const mods: RoomMod[] = [defaultMod()];
+		const mods: RoomMod[] = [syncMod(), cursorMod(), cardMod()];
 
 		self.on('open', (id) => {
 			$selfId = id;
