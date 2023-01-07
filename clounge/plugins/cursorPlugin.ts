@@ -4,6 +4,11 @@ import type {
   RoomExtension as NameRoomExtension,
 } from "./namePlugin";
 
+// @ts-ignore
+import drag from '../assets/drag.png';
+// @ts-ignore
+import point from '../assets/point.png';
+
 
 export type CursorData = {
   pressed: boolean;
@@ -40,7 +45,7 @@ export default function plugin(): RoomPlugin<null, RoomExtension> {
         moveCursor(data.position, peerId, room);
       } else if (data?.type === "mouse_press") {
         room.peers[peerId].cursor.pressed = data.pressed;
-        room.peers[peerId].cursorImage.src = data.pressed ? '/drag.png' : '/point.png';
+        room.peers[peerId].cursorImage.src = data.pressed ? drag : point;
       }
     },
     selfSetup(room) {
@@ -90,7 +95,7 @@ export default function plugin(): RoomPlugin<null, RoomExtension> {
       });
 
       window.addEventListener("mousedown", () => {
-        room.self.cursorImage.src = '/drag.png';
+        room.self.cursorImage.src = drag;
 
         const message: MouseMessage = {
           type: "mouse_press",
@@ -102,7 +107,7 @@ export default function plugin(): RoomPlugin<null, RoomExtension> {
       });
 
       window.addEventListener("mouseup", () => {
-        room.self.cursorImage.src = '/point.png';
+        room.self.cursorImage.src = point;
 
         const message: MouseMessage = {
           type: "mouse_press",
@@ -143,7 +148,7 @@ function createCursorElement(name: string): CursorElements {
 
   cursorElement.className = `cursor`;
   cursorElement.style.left = cursorImage.style.top = "-99px";
-  cursorImage.src = "/point.png";
+  cursorImage.src = point;
   cursorImage.width = 24;
 
   txt.innerHTML = name;
