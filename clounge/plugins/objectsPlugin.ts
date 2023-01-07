@@ -32,8 +32,8 @@ export default function plugin(): RoomPlugin<null, CursorRoomExtension, object, 
     element.style.position = 'fixed';
 
     element.src = spawnData.imgSrc;
-    element.width = spawnData.width;
-    element.height = spawnData.height;
+    if (spawnData.width) { element.width = spawnData.width; }
+    if (spawnData.height) { element.height = spawnData.height; }
     element.style.left = `${spawnData.x}px`;
     element.style.top = `${spawnData.y}px`;
 
@@ -81,7 +81,7 @@ export default function plugin(): RoomPlugin<null, CursorRoomExtension, object, 
       uploadContainer.style.right = "10rem";
       uploadContainer.style.padding = "1rem";
 
-      uploadButton.innerText = "📷 Upload Image";
+      uploadButton.innerText = "📷 Load Object Descriptor";
       uploadButton.style.padding = "0.5rem 0.8rem";
       uploadButton.onclick = async () => {
         try {
@@ -91,8 +91,8 @@ export default function plugin(): RoomPlugin<null, CursorRoomExtension, object, 
             for (let i = 0; i < count; i++) {
               const objectData: ObjectSpawn = {
                 id: ++state.currentId, // increment
-                x: 0,
-                y: 0,
+                x: 300,
+                y: 300,
                 width: 160,
                 imgSrc: url,
               };
@@ -112,6 +112,7 @@ export default function plugin(): RoomPlugin<null, CursorRoomExtension, object, 
           });
         } catch {
           // Eh...
+          console.error('failed to load images..');
         }
       }
       uploadContainer.appendChild(uploadButton);
