@@ -27,6 +27,13 @@ export default function plugin(): RoomPlugin {
                   box-shadow: black 1px 1px;
                   background-color: #87556F;
                 }
+
+                input {
+                  border-radius: 4px;
+                  background: #59405C;
+                } input:focus {
+                  outline: 1px solid #87556F;
+                }
             </style>
             `;
     },

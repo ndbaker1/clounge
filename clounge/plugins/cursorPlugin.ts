@@ -24,7 +24,11 @@ export type MouseMessage =
     pressed: boolean;
   };
 
-type CursorElements = { cursorElement: HTMLElement, cursorImage: HTMLImageElement };
+type CursorElements = {
+  cursorElement: HTMLElement,
+  cursorImage: HTMLImageElement,
+  nameElement: HTMLParagraphElement,
+};
 
 type CursorPluginData = CursorElements & { cursor: CursorData };
 
@@ -34,13 +38,32 @@ export default function plugin(): RoomPlugin<null, RoomExtension> {
   const cursorContainer = document.createElement("div");
   document.body.appendChild(cursorContainer);
 
+  function createCursor(): CursorElements {
+    const cursorElement = document.createElement("div");
+    const cursorImage = document.createElement("img");
+    const nameElement = document.createElement("p");
+
+    cursorElement.className = `cursor`;
+    cursorElement.style.left = cursorImage.style.top = "-99px";
+    cursorImage.src = point;
+    cursorImage.width = 24;
+
+    cursorElement.appendChild(cursorImage);
+    cursorElement.appendChild(nameElement);
+
+    cursorContainer.appendChild(cursorElement);
+
+    return {
+      cursorElement,
+      cursorImage,
+      nameElement,
+    };
+  }
+
   return {
     processData(room, data: MouseMessage | SyncMessage, peerId) {
       if (data?.type === "identification") {
-        const { cursorElement, cursorImage } = createCursorElement(data.name);
-        cursorContainer.appendChild(cursorElement);
-        room.peers[peerId].cursorElement = cursorElement;
-        room.peers[peerId].cursorImage = cursorImage;
+        room.peers[peerId].nameElement.innerHTML = data.name;
       } else if (data?.type === "mouse_position") {
         moveCursor(data.position, peerId, room);
       } else if (data?.type === "mouse_press") {
@@ -51,10 +74,10 @@ export default function plugin(): RoomPlugin<null, RoomExtension> {
     selfSetup(room) {
       room.self.cursor = { x: 0, y: 0, pressed: false };
 
-      const { cursorElement, cursorImage } = createCursorElement(room.self.name);
-      cursorContainer.appendChild(cursorElement);
-      room.self.cursorElement = cursorElement;
-      room.self.cursorImage = cursorImage;
+      const cursorData = createCursor();
+      cursorData.nameElement.innerHTML = 'me';
+      cursorData.nameElement.style.color = '#F2A07B';
+      room.self = { ...room.self, ...cursorData };
 
       // hacky way to remove the cursor in all cases
       document.head.innerHTML += `
@@ -120,6 +143,10 @@ export default function plugin(): RoomPlugin<null, RoomExtension> {
     },
     peerSetup(room, peerId) {
       room.peers[peerId].cursor = { x: 0, y: 0, pressed: false };
+
+      const cursorData = createCursor();
+      room.peers[peerId] = { ...room.peers[peerId], ...cursorData };
+
       room.peers[peerId].connection.send({
         type: 'mouse_position',
         position: room.self.cursor,
@@ -127,7 +154,6 @@ export default function plugin(): RoomPlugin<null, RoomExtension> {
     },
     handlePeerDisconnect(room, peerId) {
       room.peers[peerId].cursorElement.remove();
-      delete room.peers[peerId];
     },
   };
 }
@@ -147,24 +173,4 @@ function moveCursor(
     ref.cursorElement.style.left = `${x}px`;
     ref.cursorElement.style.top = `${y}px`;
   }
-}
-
-function createCursorElement(name: string): CursorElements {
-  const cursorElement = document.createElement("div");
-  const cursorImage = document.createElement("img");
-  const txt = document.createElement("p");
-
-  cursorElement.className = `cursor`;
-  cursorElement.style.left = cursorImage.style.top = "-99px";
-  cursorImage.src = point;
-  cursorImage.width = 24;
-
-  txt.innerHTML = name;
-  cursorElement.appendChild(cursorImage);
-  cursorElement.appendChild(txt);
-
-  return {
-    cursorElement,
-    cursorImage,
-  };
 }

@@ -2,7 +2,7 @@ import namePlugin from "./namePlugin";
 import cursorPlugin from "./cursorPlugin";
 import objectsPlugin from "./objectsPlugin";
 import sharePlugin from "./sharePlugin";
-import aestheticsPlugin from "./aestheticsPlugin";
+import themePlugin from "./themePlugin";
 import pluginManagerPlugin from "./pluginManagerPlugin";
 import peerRelayPlugin from "./peerRelayPlugin";
 
@@ -11,7 +11,7 @@ import { RoomPlugin } from "types";
 export function defaultPlugins(): RoomPlugin[] {
   return [
     // no dependencies
-    aestheticsPlugin(),
+    themePlugin(),
     pluginManagerPlugin(),
     peerRelayPlugin(),
     sharePlugin(),

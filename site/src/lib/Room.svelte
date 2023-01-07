@@ -71,6 +71,7 @@
 					plugins.forEach(
 						(plugin) => plugin.handlePeerDisconnect && plugin.handlePeerDisconnect(room, con.peer)
 					);
+      				delete room.peers[con.peer];
 				}
 				con.on('close', handlePeerDisconnect);
 				con.on('error', handlePeerDisconnect);
