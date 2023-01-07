@@ -7,7 +7,7 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "noEmit": true,
-    "isolatedModules": true,
+    "isolatedModules": true
   },
   "include": [
     "**/*"

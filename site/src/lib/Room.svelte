@@ -9,12 +9,22 @@
 	const PLUGIN_URLS_KEY = 'pluginUrls';
 	const QUERY_PARAM_PEER_ID_KEY = 'peer';
 
+	function noErrorParseJSON(json: string | null) {
+		try {
+			return JSON.parse(json ?? '');
+		} catch {
+			console.error('failed to parse plugin-json:', json);
+			return null;
+		}
+	}
+
 	onMount(async () => {
 		const params = new URLSearchParams(location.search);
 		const peer = params.get(QUERY_PARAM_PEER_ID_KEY);
 		const self = new Peer();
 
-		const externalPlugins: string[] = JSON.parse(sessionStorage.getItem(PLUGIN_URLS_KEY) ?? '[]');
+		const externalPlugins: string[] =
+			noErrorParseJSON(sessionStorage.getItem(PLUGIN_URLS_KEY)) ?? [];
 
 		const plugins: RoomPlugin[] = [...defaultPlugins(), ...(await loadPlugins(externalPlugins))];
 
