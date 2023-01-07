@@ -14,7 +14,7 @@ export default function plugin(): RoomPlugin {
       roomLink.style.padding = "0.5rem 0.8rem";
       roomLink.onclick = async () => {
         await navigator.clipboard.writeText(
-          `${location.origin}?peer=${room.self.id}`
+          `${location.origin}${location.pathname}?peer=${room.self.id}`
         );
 
         roomLink.innerText = "📋 Link Copied";
