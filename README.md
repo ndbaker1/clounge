@@ -1,5 +1,5 @@
 # clounge
-🛋 simple peer2peer lounge to mod with games
+peer2peer lounge supportings user plugins
 
 ## Documentation
 
