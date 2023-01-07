@@ -2,11 +2,11 @@ import { RoomPlugin } from "types";
 
 type IncomingDataType =
   | {
-      type: "type1";
-    }
+    type: "type1";
+  }
   | {
-      type: "type2";
-    };
+    type: "type2";
+  };
 
 export type PluginState = {
   etc: any;
@@ -24,6 +24,9 @@ export default function plugin(): RoomPlugin<PluginState, RoomExtension> {
       } else if (data?.type === "type2") {
         /// TODO
       }
+    },
+    selfSetup(room) {
+      // TODO
     },
     peerSetup(room, peerId) {
       /// TODO

@@ -32,7 +32,13 @@
 			const room: RoomData = {
 				objects: {},
 				peers: {},
-				self: { id }
+				self: {
+					id,
+					connect: (peer) => { 
+						const peerCon = self.connect(peer);
+						setupPeerDataHandler(peerCon);
+					},
+				}
 			};
 
 			plugins.forEach((plugin) => plugin.selfSetup && plugin.selfSetup(room));
@@ -41,10 +47,7 @@
 				setupPeerDataHandler(con);
 			});
 
-			if (peer) {
-				const peerCon = self.connect(peer);
-				setupPeerDataHandler(peerCon);
-			}
+			if (peer) room.self.connect(peer);
 
 			function setupPeerDataHandler(con: DataConnection) {
 				con.on('open', () => {

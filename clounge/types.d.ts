@@ -19,7 +19,7 @@ export type RoomData<
   ObjectExtension extends ObjectData = ObjectData
 > = BaseExtension & {
   peers: Record<PeerID, ConnectedPeerData & PeerExtension>;
-  self: { id: PeerID } & PeerExtension;
+  self: { id: PeerID, connect: (peerId: PeerID) => void } & PeerExtension;
   objects: Record<number, ObjectExtension>;
 };
 
