@@ -4,8 +4,8 @@ import type { RoomExtension as CursorRoomExtension } from "./cursorPlugin";
 
 type ObjectSpawn = {
   id: number;
-  width: number;
-  height: number;
+  width?: number;
+  height?: number;
   imgSrc: string;
 } & Vector2D;
 
@@ -93,8 +93,7 @@ export default function plugin(): RoomPlugin<null, CursorRoomExtension, object, 
                 id: ++state.currentId, // increment
                 x: 0,
                 y: 0,
-                width: 200,
-                height: 200,
+                width: 160,
                 imgSrc: url,
               };
 
