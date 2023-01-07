@@ -1,6 +1,6 @@
 import namePlugin from "./namePlugin";
 import cursorPlugin from "./cursorPlugin";
-import cardPlugin from "./cardPlugin";
+import objectsPlugin from "./objectsPlugin";
 import sharePlugin from "./sharePlugin";
 import aestheticsPlugin from "./aestheticsPlugin";
 import pluginManagerPlugin from "./pluginManagerPlugin";
@@ -21,7 +21,7 @@ export function defaultPlugins(): RoomPlugin[] {
     cursorPlugin(),
 
     // cursorPlugin
-    cardPlugin(),
+    objectsPlugin(),
   ];
 }
 

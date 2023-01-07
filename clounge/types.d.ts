@@ -6,6 +6,7 @@ export type Vector2D = {
 export type ConnectedPeerData = {
   connection: {
     send: (data: any) => void;
+    close: () => void;
   };
 };
 
@@ -34,5 +35,5 @@ export type RoomPlugin<
   selfSetup?(room: RoomData<PeerExtension, BaseExtension, ObjectExtension>): void;
   peerSetup?(room: RoomData<PeerExtension, BaseExtension, ObjectExtension>, peerId: PeerID): void;
   processData?(room: RoomData<PeerExtension, BaseExtension, ObjectExtension>, data: any, peerId: PeerID): void;
-  render?(room: RoomData<PeerExtension, BaseExtension, ObjectExtension>): void;
+  handlePeerDisconnect?(room: RoomData<PeerExtension, BaseExtension, ObjectExtension>, peerId: PeerID): void;
 };

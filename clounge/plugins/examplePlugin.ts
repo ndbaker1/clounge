@@ -31,7 +31,7 @@ export default function plugin(): RoomPlugin<PluginState, RoomExtension> {
     peerSetup(room, peerId) {
       /// TODO
     },
-    render(room) {
+    handlePeerDisconnect(room) {
       /// TODO
     },
   };

@@ -34,18 +34,24 @@
 				peers: {},
 				self: {
 					id,
-					connect: (peer) => { 
+					connect: (peer) => {
 						const peerCon = self.connect(peer);
 						setupPeerDataHandler(peerCon);
-					},
+					}
 				}
 			};
-
-			plugins.forEach((plugin) => plugin.selfSetup && plugin.selfSetup(room));
 
 			self.on('connection', (con) => {
 				setupPeerDataHandler(con);
 			});
+
+			plugins.forEach((plugin) => plugin.selfSetup && plugin.selfSetup(room));
+
+			window.onbeforeunload = () => {
+				for (const peer in room.peers) {
+					room.peers[peer].connection.close();
+				}
+			};
 
 			if (peer) room.self.connect(peer);
 
@@ -60,6 +66,14 @@
 						(plugin) => plugin.processData && plugin.processData(room, data, con.peer)
 					);
 				});
+
+				function handlePeerDisconnect() {
+					plugins.forEach(
+						(plugin) => plugin.handlePeerDisconnect && plugin.handlePeerDisconnect(room, con.peer)
+					);
+				}
+				con.on('close', handlePeerDisconnect);
+				con.on('error', handlePeerDisconnect);
 			}
 		});
 	});

@@ -16,7 +16,7 @@ export type CursorData = {
 
 export type MouseMessage =
   | {
-    type: "mouse_pos";
+    type: "mouse_position";
     position: Vector2D;
   }
   | {
@@ -41,7 +41,7 @@ export default function plugin(): RoomPlugin<null, RoomExtension> {
         cursorContainer.appendChild(cursorElement);
         room.peers[peerId].cursorElement = cursorElement;
         room.peers[peerId].cursorImage = cursorImage;
-      } else if (data?.type === "mouse_pos") {
+      } else if (data?.type === "mouse_position") {
         moveCursor(data.position, peerId, room);
       } else if (data?.type === "mouse_press") {
         room.peers[peerId].cursor.pressed = data.pressed;
@@ -84,7 +84,7 @@ export default function plugin(): RoomPlugin<null, RoomExtension> {
         room.self.cursor.y = clientY;
 
         const message: MouseMessage = {
-          type: "mouse_pos",
+          type: "mouse_position",
           position: room.self.cursor,
         };
         for (const id in room.peers) {
@@ -120,6 +120,14 @@ export default function plugin(): RoomPlugin<null, RoomExtension> {
     },
     peerSetup(room, peerId) {
       room.peers[peerId].cursor = { x: 0, y: 0, pressed: false };
+      room.peers[peerId].connection.send({
+        type: 'mouse_position',
+        position: room.self.cursor,
+      } as MouseMessage);
+    },
+    handlePeerDisconnect(room, peerId) {
+      room.peers[peerId].cursorElement.remove();
+      delete room.peers[peerId];
     },
   };
 }
