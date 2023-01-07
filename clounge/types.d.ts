@@ -3,8 +3,6 @@ export type Vector2D = {
   y: number;
 };
 
-export type ObjectData = Vector2D;
-
 export type ConnectedPeerData = {
   connection: {
     send: (data: any) => void;
@@ -16,7 +14,7 @@ type PeerID = string;
 export type RoomData<
   PeerExtension = {},
   BaseExtension = {},
-  ObjectExtension extends ObjectData = ObjectData
+  ObjectExtension = {},
 > = BaseExtension & {
   peers: Record<PeerID, ConnectedPeerData & PeerExtension>;
   self: { id: PeerID, connect: (peerId: PeerID) => void } & PeerExtension;
@@ -28,13 +26,13 @@ export type RoomData<
  */
 export type RoomPlugin<
   State = any,
-  A = {},
-  B = {},
-  C extends ObjectData = ObjectData
+  PeerExtension = {},
+  BaseExtension = {},
+  ObjectExtension = {},
 > = {
   state?: State;
-  selfSetup?(room: RoomData<A, B, C>): void;
-  peerSetup?(room: RoomData<A, B, C>, peerId: PeerID): void;
-  processData?(room: RoomData<A, B, C>, data: any, peerId: PeerID): void;
-  render?(room: RoomData<A, B, C>): void;
+  selfSetup?(room: RoomData<PeerExtension, BaseExtension, ObjectExtension>): void;
+  peerSetup?(room: RoomData<PeerExtension, BaseExtension, ObjectExtension>, peerId: PeerID): void;
+  processData?(room: RoomData<PeerExtension, BaseExtension, ObjectExtension>, data: any, peerId: PeerID): void;
+  render?(room: RoomData<PeerExtension, BaseExtension, ObjectExtension>): void;
 };

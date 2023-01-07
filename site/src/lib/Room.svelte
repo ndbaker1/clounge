@@ -66,6 +66,14 @@
 </script>
 
 <style global>
+	@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300&display=swap');
+
+	* {
+		font-family: 'JetBrains Mono', monospace;
+		-webkit-user-drag: none;
+		user-select: none;
+	}
+
 	html {
 		overflow: hidden;
 	}

@@ -4,39 +4,52 @@ import type {
   RoomExtension as NameRoomExtension,
 } from "./namePlugin";
 
+
 export type CursorData = {
   pressed: boolean;
 } & Vector2D;
 
-export type MouseUpdate = {
-  type: "mouse";
-  data: CursorData;
-};
+export type MouseMessage =
+  | {
+    type: "mouse_pos";
+    position: Vector2D;
+  }
+  | {
+    type: "mouse_press";
+    pressed: boolean;
+  };
 
-type CursorPluginData = { cursorElement: HTMLElement } & { cursor: CursorData };
+type CursorElements = { cursorElement: HTMLElement, cursorImage: HTMLImageElement };
+
+type CursorPluginData = CursorElements & { cursor: CursorData };
 
 export type RoomExtension = CursorPluginData & NameRoomExtension;
 
 export default function plugin(): RoomPlugin<null, RoomExtension> {
-  const canvas = document.createElement("div");
-  document.body.appendChild(canvas);
+  const cursorContainer = document.createElement("div");
+  document.body.appendChild(cursorContainer);
 
   return {
-    processData(room, data: MouseUpdate | SyncMessage, peerId) {
+    processData(room, data: MouseMessage | SyncMessage, peerId) {
       if (data?.type === "identification") {
-        const cursorElement = createCursorElement(data.name);
-        canvas.appendChild(cursorElement);
+        const { cursorElement, cursorImage } = createCursorElement(data.name);
+        cursorContainer.appendChild(cursorElement);
         room.peers[peerId].cursorElement = cursorElement;
-      } else if (data?.type === "mouse") {
-        moveCursor(data.data, peerId, room);
+        room.peers[peerId].cursorImage = cursorImage;
+      } else if (data?.type === "mouse_pos") {
+        moveCursor(data.position, peerId, room);
+      } else if (data?.type === "mouse_press") {
+        room.peers[peerId].cursor.pressed = data.pressed;
+        room.peers[peerId].cursorImage.src = data.pressed ? '/drag.png' : '/point.png';
       }
     },
     selfSetup(room) {
       room.self.cursor = { x: 0, y: 0, pressed: false };
 
-      const cursorElement = createCursorElement(room.self.name);
-      canvas.appendChild(cursorElement);
+      const { cursorElement, cursorImage } = createCursorElement(room.self.name);
+      cursorContainer.appendChild(cursorElement);
       room.self.cursorElement = cursorElement;
+      room.self.cursorImage = cursorImage;
 
       // hacky way to remove the cursor in all cases
       document.head.innerHTML += `
@@ -50,11 +63,13 @@ export default function plugin(): RoomPlugin<null, RoomExtension> {
                     user-select: none;
                     pointer-events: none;
 
-                    margin-left: -16px;
-                    margin-top: -10px;
+                    margin-left: -7px;
+                    margin-top: -4px;
 
-                    text-align: center;
+                    align-items: center;
                     z-index: 99;
+                } .cursor > p {
+                  margin: 0;
                 }
             </style>
             `;
@@ -63,14 +78,39 @@ export default function plugin(): RoomPlugin<null, RoomExtension> {
         room.self.cursor.x = clientX;
         room.self.cursor.y = clientY;
 
+        const message: MouseMessage = {
+          type: "mouse_pos",
+          position: room.self.cursor,
+        };
         for (const id in room.peers) {
-          room.peers[id].connection.send({
-            type: "mouse",
-            data: room.self.cursor,
-          } as MouseUpdate);
+          room.peers[id].connection.send(message);
         }
 
         moveCursor({ x: clientX, y: clientY }, room.self.id, room, true);
+      });
+
+      window.addEventListener("mousedown", () => {
+        room.self.cursorImage.src = '/drag.png';
+
+        const message: MouseMessage = {
+          type: "mouse_press",
+          pressed: true,
+        };
+        for (const id in room.peers) {
+          room.peers[id].connection.send(message);
+        }
+      });
+
+      window.addEventListener("mouseup", () => {
+        room.self.cursorImage.src = '/point.png';
+
+        const message: MouseMessage = {
+          type: "mouse_press",
+          pressed: false,
+        };
+        for (const id in room.peers) {
+          room.peers[id].connection.send(message);
+        }
       });
     },
     peerSetup(room, peerId) {
@@ -86,32 +126,32 @@ function moveCursor(
   isSelf = false
 ) {
   const ref = isSelf ? room.self : room.peers[id];
-  const cursorRef = ref.cursorElement;
-  const cursor = ref.cursor;
-  cursor.x = x;
-  cursor.y = y;
 
-  if (cursorRef) {
-    cursorRef.style.left = `${x}px`;
-    cursorRef.style.top = `${y}px`;
+  ref.cursor.x = x;
+  ref.cursor.y = y;
+
+  if (ref.cursorElement) {
+    ref.cursorElement.style.left = `${x}px`;
+    ref.cursorElement.style.top = `${y}px`;
   }
 }
 
-function createCursorElement(name: string): HTMLElement {
+function createCursorElement(name: string): CursorElements {
   const cursorElement = document.createElement("div");
   const cursorImage = document.createElement("img");
   const txt = document.createElement("p");
 
   cursorElement.className = `cursor`;
-  cursorElement.style.left = cursorElement.style.top = "-99px";
-  cursorImage.src =
-    "https://www.freeiconspng.com/thumbs/cursor-png/description-cursor-icon-with-shadow-32.png";
-  cursorImage.width = 40;
-  cursorImage.height = 48;
+  cursorElement.style.left = cursorImage.style.top = "-99px";
+  cursorImage.src = "/point.png";
+  cursorImage.width = 24;
 
   txt.innerHTML = name;
   cursorElement.appendChild(cursorImage);
   cursorElement.appendChild(txt);
 
-  return cursorElement;
+  return {
+    cursorElement,
+    cursorImage,
+  };
 }
