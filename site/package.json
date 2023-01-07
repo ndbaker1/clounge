@@ -18,7 +18,6 @@
 		"@sveltejs/kit": "^1.0.0",
 		"@typescript-eslint/eslint-plugin": "^5.45.0",
 		"@typescript-eslint/parser": "^5.45.0",
-		"clounge": "file:../clounge",
 		"eslint": "^8.28.0",
 		"eslint-config-prettier": "^8.5.0",
 		"eslint-plugin-svelte3": "^4.0.0",
@@ -28,10 +27,10 @@
 		"svelte-check": "^2.9.2",
 		"tslib": "^2.4.1",
 		"typescript": "^4.9.3",
-		"vite": "^4.0.0"
+		"vite": "^4.0.0",
+		"clounge": "file:../clounge"
 	},
 	"dependencies": {
-		"monaco-editor": "^0.34.1",
 		"peerjs": "^1.4.7"
 	}
 }

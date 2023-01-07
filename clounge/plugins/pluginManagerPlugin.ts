@@ -1,5 +1,6 @@
 import { RoomPlugin } from "types";
 
+
 const PLUGINS_KEY = "pluginUrls";
 
 export default function plugin(): RoomPlugin {
@@ -19,31 +20,30 @@ export default function plugin(): RoomPlugin {
 
         document.body.appendChild(editorWindow);
 
-        (async () => {
-            const monaco = await import("monaco-editor");
-            const editor = monaco.editor.create(editorWindow, {
-                value: sessionStorage.getItem(PLUGINS_KEY),
-                language: "json",
-                theme: "vs-dark",
-                minimap: { enabled: false },
-            });
+        // @ts-ignore Import module
+        import("https://esm.sh/monaco-editor")
+            // useful hack to get type suggestion using devDep version of monaco
+            .then((monaco: typeof import('monaco-editor')) => {
+                const editor = monaco.editor.create(editorWindow, {
+                    value: sessionStorage.getItem(PLUGINS_KEY),
+                    language: "json",
+                    theme: "vs-dark",
+                    minimap: { enabled: false },
+                });
 
-            editor.applyFontInfo(document.documentElement);
-            editor.onDidChangeModelContent(() =>
-                sessionStorage.setItem(PLUGINS_KEY, editor.getValue())
-            );
+                editor.onDidChangeModelContent(() =>
+                    sessionStorage.setItem(PLUGINS_KEY, editor.getValue())
+                );
 
-            monaco.editor.remeasureFonts();
-
-            window.addEventListener("keypress", ({ key }) => {
-                if (key === "?") {
-                    editorWindow.style.marginBottom =
-                        editorWindow.style.marginBottom === marginOffset
-                            ? "0"
-                            : marginOffset;
-                }
-            });
-        })();
+                window.addEventListener("keypress", ({ key }) => {
+                    if (key === "?") {
+                        editorWindow.style.marginBottom =
+                            editorWindow.style.marginBottom === marginOffset
+                                ? "0"
+                                : marginOffset;
+                    }
+                });
+            })
     }
 
     return {};
