@@ -1,4 +1,5 @@
-import { RoomPlugin, Vector2D } from "index";
+import { RoomPlugin, Vector2D } from "types";
+
 
 type Message =
     | {
@@ -18,9 +19,6 @@ type Message =
     };
 
 export default function plugin(): RoomPlugin {
-    const canvas = document.createElement('div');
-    document.body.appendChild(canvas);
-
     return {
         processData(room, data: Message, peerId) {
             if (data?.type === 'drag') {

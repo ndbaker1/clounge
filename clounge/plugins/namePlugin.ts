@@ -1,4 +1,5 @@
-import { RoomPlugin } from "index";
+import { RoomPlugin } from "types";
+
 
 export type SyncMessage = {
     type: 'identification';
@@ -8,9 +9,6 @@ export type SyncMessage = {
 export type RoomExtension = { name: string };
 
 export default function plugin(): RoomPlugin<null, RoomExtension> {
-    const canvas = document.createElement('div');
-    document.body.appendChild(canvas);
-
     return {
         processData(room, data: SyncMessage, peerId) {
             if (data?.type === 'identification') {
@@ -18,13 +16,14 @@ export default function plugin(): RoomPlugin<null, RoomExtension> {
             }
         },
         peerSetup(room, peerId) {
-            room.peers[peerId].connection.send({
+            const message: SyncMessage = {
                 type: 'identification',
-                name: room.self.name
-            } as SyncMessage);
+                name: room.self.name,
+            };
+            room.peers[peerId].connection.send(message);
         },
         selfSetup(room) {
-            room.self.name = prompt("name?") || "noname";
+            room.self.name = "noname";
         }
     };
 }

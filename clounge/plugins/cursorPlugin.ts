@@ -1,5 +1,6 @@
-import { RoomData, RoomPlugin, Vector2D } from "index";
-import { SyncMessage, RoomExtension as NameRoomExtension } from "./namePlugin";
+import type { RoomData, RoomPlugin, Vector2D } from "types";
+import type { SyncMessage, RoomExtension as NameRoomExtension } from "./namePlugin";
+
 
 export type CursorData = {
     pressed: boolean,
@@ -21,43 +22,19 @@ export default function plugin(): RoomPlugin<null, RoomExtension> {
     return {
         processData(room, data: MouseUpdate | SyncMessage, peerId) {
             if (data?.type === 'identification') {
-                const cursorElement = document.createElement('div');
-                const cursorImage = document.createElement('img');
-                const txt = document.createElement('p');
-
-                cursorElement.className = `cursor`;
-                cursorElement.style.left = cursorElement.style.top = '-99px';
-                cursorImage.src =
-                    'https://www.freeiconspng.com/thumbs/cursor-png/description-cursor-icon-with-shadow-32.png';
-                cursorImage.width = 40;
-                cursorImage.height = 48;
-                txt.innerHTML = data.name;
-                cursorElement.appendChild(cursorImage);
-                cursorElement.appendChild(txt);
-                canvas?.appendChild(cursorElement);
+                const cursorElement = createCursorElement(data.name);
+                canvas.appendChild(cursorElement);
                 room.peers[peerId].cursorElement = cursorElement;
             } else if (data?.type === 'mouse') {
                 moveCursor(data.data, peerId, room);
             }
         },
         selfSetup(room) {
-            const cursorElement = document.createElement('div');
-            const cursorImage = document.createElement('img');
-            const txt = document.createElement('p');
-
-            cursorElement.className = `cursor`;
-            cursorElement.style.left = cursorElement.style.top = '-99px';
-            cursorImage.src =
-                'https://www.freeiconspng.com/thumbs/cursor-png/description-cursor-icon-with-shadow-32.png';
-            cursorImage.width = 40;
-            cursorImage.height = 48;
-
-            txt.innerHTML = room.self.name;
-            cursorElement.appendChild(cursorImage);
-            cursorElement.appendChild(txt);
-            canvas?.appendChild(cursorElement);
-            room.self.cursorElement = cursorElement;
             room.self.cursor = { x: 0, y: 0, pressed: false };
+
+            const cursorElement = createCursorElement(room.self.name);
+            canvas.appendChild(cursorElement);
+            room.self.cursorElement = cursorElement;
 
             // hacky way to remove the cursor in all cases
             document.head.innerHTML += `
@@ -65,12 +42,17 @@ export default function plugin(): RoomPlugin<null, RoomExtension> {
                 * { cursor: none; }
 
                 .cursor {
+                    display: flex;
+                    flex-direction: row;
                     position: absolute;
                     user-select: none;
                     pointer-events: none;
 
                     margin-left: -16px;
                     margin-top: -10px;
+
+                    text-align: center;
+                    z-index: 99;
                 }
             </style>
             `;
@@ -106,4 +88,23 @@ function moveCursor({ x, y }: Vector2D, id: string, room: RoomData<RoomExtension
         cursorRef.style.left = `${x}px`;
         cursorRef.style.top = `${y}px`;
     }
+}
+
+function createCursorElement(name: string): HTMLElement {
+    const cursorElement = document.createElement('div');
+    const cursorImage = document.createElement('img');
+    const txt = document.createElement('p');
+
+    cursorElement.className = `cursor`;
+    cursorElement.style.left = cursorElement.style.top = '-99px';
+    cursorImage.src =
+        'https://www.freeiconspng.com/thumbs/cursor-png/description-cursor-icon-with-shadow-32.png';
+    cursorImage.width = 40;
+    cursorImage.height = 48;
+
+    txt.innerHTML = name
+    cursorElement.appendChild(cursorImage);
+    cursorElement.appendChild(txt);
+
+    return cursorElement;
 }
