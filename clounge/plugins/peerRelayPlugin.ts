@@ -1,4 +1,4 @@
-import { PeerID, RoomPlugin } from "types";
+import { PeerID, RoomPlugin } from "index";
 
 
 type PeerRelayMessage = {

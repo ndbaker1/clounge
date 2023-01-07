@@ -1,4 +1,4 @@
-import type { RoomData, RoomPlugin, Vector2D } from "types";
+import type { RoomData, RoomPlugin, Vector2D } from "index";
 import type {
   SyncMessage,
   RoomExtension as NameRoomExtension,

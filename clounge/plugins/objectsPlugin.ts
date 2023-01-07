@@ -1,4 +1,4 @@
-import { RoomPlugin, Vector2D } from "types";
+import { RoomPlugin, Vector2D } from "index";
 import type { RoomExtension as CursorRoomExtension } from "./cursorPlugin";
 
 

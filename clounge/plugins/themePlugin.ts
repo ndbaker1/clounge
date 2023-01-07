@@ -1,4 +1,4 @@
-import { RoomPlugin } from "types";
+import { RoomPlugin } from "index";
 
 // https://colorhunt.co/palette/4b5d67322f3d59405c87556f
 const bgColor = "#322F3D";

@@ -6,7 +6,7 @@ import themePlugin from "./themePlugin";
 import pluginManagerPlugin from "./pluginManagerPlugin";
 import peerRelayPlugin from "./peerRelayPlugin";
 
-import { RoomPlugin } from "types";
+import { RoomPlugin } from "index";
 
 export function defaultPlugins(): RoomPlugin[] {
   return [

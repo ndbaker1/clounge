@@ -1,4 +1,4 @@
-import { RoomPlugin } from "types";
+import { RoomPlugin } from "index";
 
 export default function plugin(): RoomPlugin {
   return {

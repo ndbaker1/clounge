@@ -1,4 +1,4 @@
-import { RoomPlugin } from "types";
+import { RoomPlugin } from "index";
 
 
 const PLUGINS_KEY = "pluginUrls";

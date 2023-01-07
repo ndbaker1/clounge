@@ -1,4 +1,4 @@
-import { RoomPlugin } from "types";
+import { RoomPlugin } from "index";
 
 type IncomingDataType =
   | {
