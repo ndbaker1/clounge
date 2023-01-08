@@ -3,12 +3,12 @@ import type {
   SyncMessage,
   RoomExtension as NameRoomExtension,
 } from "./namePlugin";
+import { Anchor } from "./anchorPlugin";
 
 // @ts-ignore
-import drag from '../assets/drag.png';
+import drag from "../assets/drag.png";
 // @ts-ignore
-import point from '../assets/point.png';
-
+import point from "../assets/point.png";
 
 export type CursorData = {
   pressed: boolean;
@@ -16,18 +16,18 @@ export type CursorData = {
 
 export type MouseMessage =
   | {
-    type: "mouse_position";
-    position: Vector2D;
-  }
+      type: "mouse_position";
+      position: Vector2D;
+    }
   | {
-    type: "mouse_press";
-    pressed: boolean;
-  };
+      type: "mouse_press";
+      pressed: boolean;
+    };
 
 type CursorElements = {
-  cursorElement: HTMLElement,
-  cursorImage: HTMLImageElement,
-  nameElement: HTMLParagraphElement,
+  cursorElement: HTMLElement;
+  cursorImage: HTMLImageElement;
+  nameElement: HTMLParagraphElement;
 };
 
 type CursorPluginData = CursorElements & { cursor: CursorData };
@@ -36,7 +36,7 @@ export type RoomExtension = CursorPluginData & NameRoomExtension;
 
 export default function plugin(): RoomPlugin<null, RoomExtension> {
   const cursorContainer = document.createElement("div");
-  document.body.appendChild(cursorContainer);
+  Anchor.element.appendChild(cursorContainer);
 
   function createCursor(): CursorElements {
     const cursorElement = document.createElement("div");
@@ -45,6 +45,7 @@ export default function plugin(): RoomPlugin<null, RoomExtension> {
 
     cursorElement.className = `cursor`;
     cursorElement.style.left = cursorImage.style.top = "-99px";
+    cursorElement.style.zIndex = String(99);
     cursorImage.src = point;
     cursorImage.width = 24;
 
@@ -75,8 +76,8 @@ export default function plugin(): RoomPlugin<null, RoomExtension> {
       room.self.cursor = { x: 0, y: 0, pressed: false };
 
       const cursorData = createCursor();
-      cursorData.nameElement.innerHTML = 'me';
-      cursorData.nameElement.style.color = '#F2A07B';
+      cursorData.nameElement.innerHTML = "me";
+      cursorData.nameElement.style.color = "#F2A07B";
       room.self = { ...room.self, ...cursorData };
 
       // hacky way to remove the cursor in all cases
@@ -106,9 +107,13 @@ export default function plugin(): RoomPlugin<null, RoomExtension> {
         room.self.cursor.x = clientX;
         room.self.cursor.y = clientY;
 
+        const anchorPosition = Anchor.getPosition();
         const message: MouseMessage = {
           type: "mouse_position",
-          position: room.self.cursor,
+          position: {
+            x: room.self.cursor.x - anchorPosition.x,
+            y: room.self.cursor.y - anchorPosition.y,
+          },
         };
         for (const id in room.peers) {
           room.peers[id].connection.send(message);
@@ -147,10 +152,15 @@ export default function plugin(): RoomPlugin<null, RoomExtension> {
       const cursorData = createCursor();
       room.peers[peerId] = { ...room.peers[peerId], ...cursorData };
 
-      room.peers[peerId].connection.send({
-        type: 'mouse_position',
-        position: room.self.cursor,
-      } as MouseMessage);
+      const anchorPosition = Anchor.getPosition();
+      const message: MouseMessage = {
+        type: "mouse_position",
+        position: {
+          x: room.self.cursor.x - anchorPosition.x,
+          y: room.self.cursor.y - anchorPosition.y,
+        },
+      };
+      room.peers[peerId].connection.send(message);
     },
     handlePeerDisconnect(room, peerId) {
       room.peers[peerId].cursorElement.remove();
@@ -170,7 +180,9 @@ function moveCursor(
   ref.cursor.y = y;
 
   if (ref.cursorElement) {
-    ref.cursorElement.style.left = `${x}px`;
-    ref.cursorElement.style.top = `${y}px`;
+    ref.cursorElement.style.left =
+      ref.cursor.x + (isSelf ? -Anchor.element.offsetLeft : 0) + "px";
+    ref.cursorElement.style.top =
+      ref.cursor.y + (isSelf ? -Anchor.element.offsetTop : 0) + "px";
   }
 }

@@ -29,19 +29,19 @@ export default function plugin(): RoomPlugin<null, RoomExtension> {
       nameContainer.style.padding = "0.5rem";
 
       const nameField = document.createElement("input");
-      nameField.placeholder = "provide a name.."
+      nameField.placeholder = "provide a name..";
       nameField.style.margin = "0.5rem 0.8rem";
       nameField.oninput = async () => {
         room.self.name = nameField.value; // user doesn't really even need to know their own name
 
         const message: SyncMessage = {
-          type: 'identification',
+          type: "identification",
           name: nameField.value,
         };
         for (const peer in room.peers) {
           room.peers[peer].connection.send(message);
         }
-      }
+      };
       nameContainer.appendChild(nameField);
       document.body.appendChild(nameContainer);
     },

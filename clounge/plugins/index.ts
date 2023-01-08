@@ -5,17 +5,18 @@ import sharePlugin from "./sharePlugin";
 import themePlugin from "./themePlugin";
 import pluginManagerPlugin from "./pluginManagerPlugin";
 import peerRelayPlugin from "./peerRelayPlugin";
+import anchorPlugin from "./anchorPlugin";
 
 import { RoomPlugin } from "index";
 
 export function defaultPlugins(): RoomPlugin[] {
   return [
-    // no dependencies
-    themePlugin(),
-    pluginManagerPlugin(),
     peerRelayPlugin(),
+    themePlugin(),
     sharePlugin(),
+    pluginManagerPlugin(),
     namePlugin(),
+    anchorPlugin(),
 
     // namePlugin
     cursorPlugin(),

@@ -2,11 +2,11 @@ import { RoomPlugin } from "index";
 
 type IncomingDataType =
   | {
-    type: "type1";
-  }
+      type: "type1";
+    }
   | {
-    type: "type2";
-  };
+      type: "type2";
+    };
 
 export type PluginState = {
   etc: any;

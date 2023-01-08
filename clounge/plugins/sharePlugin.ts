@@ -18,8 +18,10 @@ export default function plugin(): RoomPlugin {
         );
 
         roomLink.innerText = "📋 Link Copied";
-        setTimeout(() => { roomLink.innerText = "📢 Share Lobby" }, 1000);
-      }
+        setTimeout(() => {
+          roomLink.innerText = "📢 Share Lobby";
+        }, 1000);
+      };
       roomLinkContainer.appendChild(roomLink);
       document.body.appendChild(roomLinkContainer);
     },

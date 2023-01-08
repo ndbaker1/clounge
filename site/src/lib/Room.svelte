@@ -3,7 +3,7 @@
 
 	import { type DataConnection, Peer } from 'peerjs';
 
-	import type { RoomPlugin, RoomData } from 'clounge/types';
+	import type { RoomPlugin, RoomData } from 'clounge';
 	import { defaultPlugins, loadPlugins } from 'clounge/plugins';
 
 	const PLUGIN_URLS_KEY = 'pluginUrls';
@@ -71,7 +71,7 @@
 					plugins.forEach(
 						(plugin) => plugin.handlePeerDisconnect && plugin.handlePeerDisconnect(room, con.peer)
 					);
-      				delete room.peers[con.peer];
+					delete room.peers[con.peer];
 				}
 				con.on('close', handlePeerDisconnect);
 				con.on('error', handlePeerDisconnect);
@@ -87,9 +87,5 @@
 		font-family: 'JetBrains Mono', monospace;
 		-webkit-user-drag: none;
 		user-select: none;
-	}
-
-	html {
-		overflow: hidden;
 	}
 </style>
