@@ -16,13 +16,13 @@ export type CursorData = {
 
 export type MouseMessage =
   | {
-      type: "mouse_position";
-      position: Vector2D;
-    }
+    type: "mouse_position";
+    position: Vector2D;
+  }
   | {
-      type: "mouse_press";
-      pressed: boolean;
-    };
+    type: "mouse_press";
+    pressed: boolean;
+  };
 
 type CursorElements = {
   cursorElement: HTMLElement;
@@ -45,7 +45,6 @@ export default function plugin(): RoomPlugin<null, RoomExtension> {
 
     cursorElement.className = `cursor`;
     cursorElement.style.left = cursorImage.style.top = "-99px";
-    cursorElement.style.zIndex = String(99);
     cursorImage.src = point;
     cursorImage.width = 24;
 

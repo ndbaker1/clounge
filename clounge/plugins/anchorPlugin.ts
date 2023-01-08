@@ -23,6 +23,7 @@ export class Anchor {
 export default function plugin(): RoomPlugin {
   Anchor.element = document.createElement("div");
   Anchor.element.style.position = "fixed";
+  Anchor.element.style.zIndex = String(99999);
   Anchor.setPosition(0, 0);
 
   document.body.appendChild(Anchor.element);
