@@ -8,7 +8,7 @@ export type SyncMessage = {
 export type RoomExtension = { name: string };
 
 export default <RoomPlugin<RoomExtension>>{
-  name: "namePlugin",
+  name: "names",
   processMessage(room, data: SyncMessage, peerId) {
     if (data?.type === "identification") {
       room.peers[peerId].name = data.name;

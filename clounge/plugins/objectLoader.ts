@@ -1,9 +1,9 @@
-import type { RoomPlugin, Vector2D } from "index";
-import anchorPlugin, { Anchor } from "./anchorPlugin";
-import cursorPligin from "./cursorPlugin";
-import type { RoomExtension as CursorRoomExtension } from "./cursorPlugin";
+import type { RoomData, RoomPlugin, Vector2D } from "index";
+import anchorPlugin, { Anchor } from "./viewportAnchor";
+import cursorPligin from "./peerCursors";
+import type { RoomExtension as CursorRoomExtension } from "./peerCursors";
 
-export type SpawnObject = Vector2D & {
+export type ObjectDescriptor = Vector2D & {
   id: number;
   width?: number;
   height?: number;
@@ -22,56 +22,68 @@ export type ObjectMessage =
   }
   | {
     type: "object_spawn";
-    object: SpawnObject;
+    object: ObjectDescriptor;
   };
 
 export type RoomExtension = CursorRoomExtension;
 export type ObjectExtension = {
-  objectData: SpawnObject;
+  objectData: ObjectDescriptor;
   element: HTMLImageElement;
 };
 
 class ObjectState {
-  constructor(
-    public objectContainer: HTMLElement = document.createElement("div"),
-    // automatically keep track of the the next id to be created.
-    public currentId = 0,
-    public selectedObjectId = 0,
-    public previousPosition: Vector2D = { x: 0, y: 0 }
-  ) {
-    Anchor.element.appendChild(objectContainer);
+  static objectContainer?: HTMLElement;
+  // automatically keep track of the the next id to be created.
+  static currentId = 0;
+  static selectedObjectId = 0;
+  static previousPosition: Vector2D = { x: 0, y: 0 };
+
+  static updateId(id: number) {
+    this.currentId = Math.max(id, this.currentId);
   }
 }
 
 const OBJECT_ID_ATTRIBUTE = "object-id";
 
-let state: ObjectState;
-
-export function spawnObject(spawnData: SpawnObject): HTMLImageElement {
+export function spawnObject<P, R, O extends ObjectExtension>(room: RoomData<P, R, O>, objectData: ObjectDescriptor): HTMLImageElement {
   const element = document.createElement("img");
-  element.setAttribute(OBJECT_ID_ATTRIBUTE, spawnData.id.toString());
+  element.setAttribute(OBJECT_ID_ATTRIBUTE, objectData.id.toString());
   element.style.position = "absolute";
 
-  element.src = spawnData.imgSrc.front;
-  if (spawnData.width) {
-    element.width = spawnData.width;
+  element.src = objectData.imgSrc.front;
+  if (objectData.width) {
+    element.width = objectData.width;
   }
-  if (spawnData.height) {
-    element.height = spawnData.height;
+  if (objectData.height) {
+    element.height = objectData.height;
   }
-  element.style.left = spawnData.x + "px";
-  element.style.top = spawnData.y + "px";
+  element.style.left = objectData.x + "px";
+  element.style.top = objectData.y + "px";
 
-  state.objectContainer.appendChild(element);
+  if (!ObjectState.objectContainer) throw Error("object container not initialized?");
+
+  ObjectState.objectContainer?.appendChild(element);
+
+  if (objectData.id in room.objects) {
+    room.objects[objectData.id].element.remove();
+  }
+
+  room.objects[objectData.id].element = element;
+  room.objects[objectData.id].objectData = objectData;
 
   return element;
 }
 
 export default <RoomPlugin<CursorRoomExtension, object, ObjectExtension>>{
-  name: "objectsPlugin",
+  name: "objectLoader",
   dependencies: [cursorPligin.name, anchorPlugin.name],
   load() {
-    state = new ObjectState();
+    ObjectState.objectContainer = document.createElement("div");
+    if (!Anchor.element) throw Error("anchor not initialized!");
+    Anchor.element.appendChild(ObjectState.objectContainer);
+  },
+  unload() {
+    ObjectState.objectContainer?.remove();
   },
   processMessage(room, data: ObjectMessage) {
     if (data?.type === "object_position") {
@@ -79,15 +91,10 @@ export default <RoomPlugin<CursorRoomExtension, object, ObjectExtension>>{
       room.objects[data.id].objectData.y = data.position.y;
       room.objects[data.id].element.style.top = data.position.y + "px";
       room.objects[data.id].element.style.left = data.position.x + "px";
-      state.currentId = Math.max(data.id, state.currentId);
+      ObjectState.updateId(data.id);
     } else if (data?.type === "object_spawn") {
-      const element = spawnObject(data.object);
-      if (data.object.id in room.objects) {
-        room.objects[data.object.id].element.remove();
-      }
-
-      room.objects[data.object.id] = { objectData: data.object, element };
-      state.currentId = Math.max(data.object.id, state.currentId);
+      spawnObject(room, data.object);
+      ObjectState.updateId(data.object.id);
     }
   },
   selfSetup(room) {
@@ -103,7 +110,7 @@ export default <RoomPlugin<CursorRoomExtension, object, ObjectExtension>>{
     uploadButton.style.padding = "0.5rem 0.8rem";
     uploadButton.onclick = async () => {
       try {
-        const loadRequest: (Partial<SpawnObject> & { count?: number })[] = JSON.parse(
+        const loadRequest: Partial<ObjectDescriptor & { count: number }>[] = JSON.parse(
           prompt(
             "enter json string of the type: Array<{ url: string, count: number }>"
           ) ?? "empty"
@@ -111,8 +118,8 @@ export default <RoomPlugin<CursorRoomExtension, object, ObjectExtension>>{
 
         loadRequest.forEach((spawn) => {
           for (let i = 0; i < (spawn.count ?? 1); i++) {
-            const objectData: SpawnObject = {
-              id: ++state.currentId, // increment
+            const objectData: ObjectDescriptor = {
+              id: ++ObjectState.currentId, // increment
               x: 300,
               y: 300,
               width: 120,
@@ -126,8 +133,7 @@ export default <RoomPlugin<CursorRoomExtension, object, ObjectExtension>>{
               ...spawn,
             };
 
-            const element = spawnObject(objectData);
-            room.objects[state.currentId] = { element, objectData };
+            spawnObject(room, objectData);
 
             const message: ObjectMessage = {
               type: "object_spawn",
@@ -159,34 +165,34 @@ export default <RoomPlugin<CursorRoomExtension, object, ObjectExtension>>{
           hoveredElement?.getAttribute(OBJECT_ID_ATTRIBUTE) ?? ""
         );
 
-        state.selectedObjectId = elementId;
+        ObjectState.selectedObjectId = elementId;
       }
     });
 
     window.addEventListener("mouseup", ({ button }) => {
       if (button === 0) {
-        state.selectedObjectId = 0;
+        ObjectState.selectedObjectId = 0;
       }
     });
 
     window.addEventListener("mousemove", () => {
-      if (state.selectedObjectId > 0 && room.objects[state.selectedObjectId].objectData.draggable) {
+      if (ObjectState.selectedObjectId > 0 && room.objects[ObjectState.selectedObjectId].objectData.draggable) {
         const delta: Vector2D = {
-          x: room.self.cursor.x - state.previousPosition.x,
-          y: room.self.cursor.y - state.previousPosition.y,
+          x: room.self.cursor.x - ObjectState.previousPosition.x,
+          y: room.self.cursor.y - ObjectState.previousPosition.y,
         };
 
-        room.objects[state.selectedObjectId].objectData.x += delta.x;
-        room.objects[state.selectedObjectId].objectData.y += delta.y;
-        room.objects[state.selectedObjectId].element.style.top =
-          room.objects[state.selectedObjectId].objectData.y + "px";
-        room.objects[state.selectedObjectId].element.style.left =
-          room.objects[state.selectedObjectId].objectData.x + "px";
+        room.objects[ObjectState.selectedObjectId].objectData.x += delta.x;
+        room.objects[ObjectState.selectedObjectId].objectData.y += delta.y;
+        room.objects[ObjectState.selectedObjectId].element.style.top =
+          room.objects[ObjectState.selectedObjectId].objectData.y + "px";
+        room.objects[ObjectState.selectedObjectId].element.style.left =
+          room.objects[ObjectState.selectedObjectId].objectData.x + "px";
 
         const message: ObjectMessage = {
           type: "object_position",
-          id: state.selectedObjectId,
-          position: room.objects[state.selectedObjectId].objectData,
+          id: ObjectState.selectedObjectId,
+          position: room.objects[ObjectState.selectedObjectId].objectData,
         };
 
         for (const id in room.peers) {
@@ -195,8 +201,8 @@ export default <RoomPlugin<CursorRoomExtension, object, ObjectExtension>>{
       }
 
       // element-wise copy to avoid aliasing
-      state.previousPosition.x = room.self.cursor.x;
-      state.previousPosition.y = room.self.cursor.y;
+      ObjectState.previousPosition.x = room.self.cursor.x;
+      ObjectState.previousPosition.y = room.self.cursor.y;
     });
   },
   peerSetup(room, peerId) {

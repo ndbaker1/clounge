@@ -2,14 +2,14 @@ import type { RoomData, RoomPlugin, Vector2D } from "index";
 import type {
   SyncMessage,
   RoomExtension as NameRoomExtension,
-} from "./namePlugin";
-import anchorPlugin, { Anchor } from "./anchorPlugin";
+} from "./names";
+import anchorPlugin, { Anchor } from "./viewportAnchor";
 
 // @ts-ignore
 import drag from "../assets/drag.png";
 // @ts-ignore
 import point from "../assets/point.png";
-import namePlugin from "./namePlugin";
+import namePlugin from "./names";
 
 export type CursorData = Vector2D & {
   pressed: boolean;
@@ -40,10 +40,11 @@ const state = {
 };
 
 export default <RoomPlugin<RoomExtension>>{
-  name: "cursorPlugin",
+  name: "peerCursors",
   dependencies: [anchorPlugin.name, namePlugin.name],
   load() {
     state.cursorContainer = document.createElement("div");
+    if (!Anchor.element) throw Error("anchor not initialized!");
     Anchor.element.appendChild(state.cursorContainer);
   },
   unload() {
@@ -165,7 +166,7 @@ function moveCursor(
   ref.cursor.x = x;
   ref.cursor.y = y;
 
-  if (ref.cursorElement) {
+  if (ref.cursorElement && Anchor.element) {
     ref.cursorElement.style.left =
       ref.cursor.x + (isSelf ? -Anchor.element.offsetLeft : 0) + "px";
     ref.cursorElement.style.top =

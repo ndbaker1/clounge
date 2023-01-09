@@ -3,7 +3,7 @@ import type { RoomPlugin } from "index";
 // https://colorhunt.co/palette/4b5d67322f3d59405c87556f
 
 export default <RoomPlugin>{
-  name: "themePlugin",
+  name: "theme",
   selfSetup() {
     document.body.style.backgroundColor = "#322F3D";
     document.body.style.color = "white";

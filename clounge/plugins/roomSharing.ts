@@ -1,7 +1,7 @@
 import type { RoomPlugin } from "index";
 
 export default <RoomPlugin>{
-  name: "sharePlugin",
+  name: "roomSharing",
   selfSetup(room) {
     const roomLinkContainer = document.createElement("div");
     roomLinkContainer.style.position = "fixed";

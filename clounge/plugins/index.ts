@@ -1,13 +1,19 @@
-import namePlugin from "./namePlugin";
-import cursorPlugin from "./cursorPlugin";
-import objectsPlugin from "./objectsPlugin";
-import sharePlugin from "./sharePlugin";
-import themePlugin from "./themePlugin";
-import pluginManagerPlugin from "./pluginManagerPlugin";
-import peerRelayPlugin from "./peerRelayPlugin";
-import anchorPlugin from "./anchorPlugin";
-
 import type { RoomPlugin } from "index";
+
+import infoWindow from "./infoWindow";
+import names from "./names";
+import objectLoader from "./objectLoader";
+import peerCursors from "./peerCursors";
+import peerRelaying from "./peerRelaying";
+import pluginManager from "./pluginManager";
+import roomSharing from "./roomSharing";
+import theme from "./theme";
+import viewportAnchor from "./viewportAnchor";
+
+/**
+ * Global Reference to available plugins
+ */
+export let availablePlugins: RoomPlugin[] = [];
 
 /**
  * Loads default and external Plugins
@@ -18,19 +24,20 @@ export async function loadPlugins(
   externalPlugins: string[]
 ): Promise<RoomPlugin[]> {
   const plugins: RoomPlugin[] = [
-    objectsPlugin,
-    peerRelayPlugin,
-    themePlugin,
-    cursorPlugin,
-    sharePlugin,
-    pluginManagerPlugin,
-    namePlugin,
-    anchorPlugin,
+    objectLoader,
+    peerRelaying,
+    infoWindow,
+    theme,
+    peerCursors,
+    roomSharing,
+    pluginManager,
+    names,
+    viewportAnchor,
   ];
 
-  console.info("downloading any external plugins...");
+  console.info("%cdownloading any external plugins...", "color: #f0b");
   for (const pluginURL of externalPlugins) {
-    console.info(`downloading from ${pluginURL}...`);
+    console.info(`\tdownloading from ${pluginURL}...`);
     const pluginCode: string = await (await fetch(pluginURL)).text();
     const pluginModule: { default: RoomPlugin } = await import(
       /* @vite-ignore */ "data:text/javascript," + pluginCode
@@ -43,25 +50,25 @@ export async function loadPlugins(
     plugins.push(pluginModule.default);
   }
 
-  console.info(`validating plugins dependencies...`);
-  const sortedPlugins = getSortedPlugins(plugins);
+  console.info(`%cvalidating plugins dependencies...`, "color: #f72");
+  availablePlugins = getSortedPlugins(plugins);
   console.info(
-    `%cresolved valid ordering:\n%c${sortedPlugins
+    `%cresolved plugin ordering:\n%c${availablePlugins
       .map((plugin, index) => `\t${index + 1}. ${plugin.name}`)
       .join("\n")}`,
     "color: #0d0",
     "color: white"
   );
 
-  console.info(`%cbootstrapping plugins...`, "color: #9bf");
-  sortedPlugins.forEach((plugin) => {
+  console.info(`%cbootstrapping plugins...`, "color: #08f");
+  availablePlugins.forEach((plugin) => {
     if (plugin.load) {
       console.info(`\t[${plugin.name}]`);
       plugin.load();
     }
   });
 
-  return sortedPlugins;
+  return availablePlugins;
 }
 
 /**
@@ -80,7 +87,7 @@ function getSortedPlugins(plugins: RoomPlugin[]): RoomPlugin[] {
   function checkDep(dep: string) {
     if (!sortedPlugins.find((plugin) => plugin.name === dep)) {
       const plugin = pluginMap.get(dep);
-      if (!plugin) throw Error("missing dependency " + dep);
+      if (!plugin) throw Error(`missing dependency [${dep}]`);
       plugin.dependencies?.forEach(checkDep);
       sortedPlugins.push(plugin);
     }

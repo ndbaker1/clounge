@@ -6,7 +6,7 @@ type PeerRelayMessage = {
 };
 
 export default <RoomPlugin>{
-  name: "peerRelayPlugin",
+  name: "peerRelaying",
   processMessage(room, data: PeerRelayMessage) {
     if (data?.type === "peer relay message") {
       if (!(data.peerId in room.peers)) {

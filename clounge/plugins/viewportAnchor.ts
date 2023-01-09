@@ -1,14 +1,17 @@
 import type { RoomPlugin, Vector2D } from "index";
+import infoWindowPlugin, { InfoWindow } from "./infoWindow";
 
 export class Anchor {
-  static element: HTMLElement;
+  static element?: HTMLElement;
   private static position: Vector2D = { x: 0, y: 0 };
 
   static setPosition(x: number, y: number) {
     this.position.x = x;
     this.position.y = y;
-    this.element.style.left = x + "px";
-    this.element.style.top = y + "px";
+    if (this.element) {
+      this.element.style.left = x + "px";
+      this.element.style.top = y + "px";
+    }
   }
 
   static move(x: number, y: number) {
@@ -23,20 +26,27 @@ export class Anchor {
 const state = {
   mousepressed: false,
   oldPosition: { x: 0, y: 0 },
+  infoElement: <HTMLElement | null>null,
 };
 
 export default <RoomPlugin>{
-  name: "anchorPlugin",
+  name: "viewportAnchor",
+  dependencies: [infoWindowPlugin.name],
   load() {
     Anchor.element = document.createElement("div");
     Anchor.element.style.position = "fixed";
     Anchor.element.style.zIndex = String(99999);
     Anchor.setPosition(0, 0);
-
     document.body.appendChild(Anchor.element);
+
+    if (InfoWindow.element) {
+      state.infoElement = document.createElement('small');
+      InfoWindow.element.appendChild(state.infoElement);
+    }
   },
   unload() {
-    Anchor.element.remove();
+    Anchor.element?.remove();
+    state.infoElement?.remove();
   },
   selfSetup() {
     window.addEventListener("mousedown", ({ button }) => {
@@ -57,6 +67,11 @@ export default <RoomPlugin>{
 
       state.oldPosition.x = clientX;
       state.oldPosition.y = clientY;
+
+      if (state.infoElement) {
+        const currentAnchorPosition = Anchor.getPosition();
+        state.infoElement.textContent = `Viewport: (${-currentAnchorPosition.x}, ${-currentAnchorPosition.y})`;
+      }
     });
   },
 };

@@ -3,7 +3,7 @@ import type { RoomPlugin } from "index";
 const PLUGINS_KEY = "pluginUrls";
 
 export default <RoomPlugin>{
-  name: "pluginManagerPlugin",
+  name: "pluginManager",
   load() {
     if (typeof window !== "undefined") {
       const marginOffset = "-50%";

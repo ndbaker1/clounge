@@ -3,8 +3,7 @@
   "version": "1.0.0",
   "description": "core data types for clounge",
   "scripts": {
-    "format": "prettier --plugin-search-dir . --write .",
-    "install": "tsc -p tsconfig.json"
+    "format": "prettier --plugin-search-dir . --write ."
   },
   "devDependencies": {
     "prettier": "^2.8.0",
