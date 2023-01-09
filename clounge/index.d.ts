@@ -23,27 +23,61 @@ export type RoomData<
 };
 
 /**
- * Custom handlers for a room
+ * Custom Plugin Definition
  */
 export type RoomPlugin<
-  State = any,
   PeerExtension = {},
   BaseExtension = {},
   ObjectExtension = {}
 > = {
-  state?: State;
+  /**
+   * Name used to identify the plugin
+   */
+  name: string;
+  /**
+   * Optional list of plugin dependencies
+   */
+  dependencies?: string[];
+  /**
+   * Initialization for the plugin
+   */
+  load?(): void;
+  /**
+   * Cleanup procedure for the plugin
+   */
+  unload?(): void;
+  /**
+   * Setup for self upon connecting
+   * @param room RoomData reference
+   */
   selfSetup?(
     room: RoomData<PeerExtension, BaseExtension, ObjectExtension>
   ): void;
+  /**
+   * Setup for peers when connecting to self
+   * @param room RoomData reference
+   * @param peerId ID of the connecting peer
+   */
   peerSetup?(
     room: RoomData<PeerExtension, BaseExtension, ObjectExtension>,
     peerId: PeerID
   ): void;
-  processData?(
+  /**
+   * Handler for incoming messages from peers
+   * @param room RoomData reference
+   * @param data peer message
+   * @param peerId ID of the peer which the data comes from
+   */
+  processMessage?<T = any>(
     room: RoomData<PeerExtension, BaseExtension, ObjectExtension>,
-    data: any,
+    data: T,
     peerId: PeerID
   ): void;
+  /**
+   * Handler for when a peer has disconnected
+   * @param room RoomData reference
+   * @param peerId ID the peer
+   */
   handlePeerDisconnect?(
     room: RoomData<PeerExtension, BaseExtension, ObjectExtension>,
     peerId: PeerID

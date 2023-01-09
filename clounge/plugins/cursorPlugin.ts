@@ -3,16 +3,17 @@ import type {
   SyncMessage,
   RoomExtension as NameRoomExtension,
 } from "./namePlugin";
-import { Anchor } from "./anchorPlugin";
+import anchorPlugin, { Anchor } from "./anchorPlugin";
 
 // @ts-ignore
 import drag from "../assets/drag.png";
 // @ts-ignore
 import point from "../assets/point.png";
+import namePlugin from "./namePlugin";
 
-export type CursorData = {
+export type CursorData = Vector2D & {
   pressed: boolean;
-} & Vector2D;
+};
 
 export type MouseMessage =
   | {
@@ -30,126 +31,68 @@ type CursorElements = {
   nameElement: HTMLParagraphElement;
 };
 
-type CursorPluginData = CursorElements & { cursor: CursorData };
+export type RoomExtension = CursorElements & {
+  cursor: CursorData;
+} & NameRoomExtension;
 
-export type RoomExtension = CursorPluginData & NameRoomExtension;
+const state = {
+  cursorContainer: <HTMLElement | null>null,
+};
 
-export default function plugin(): RoomPlugin<null, RoomExtension> {
-  const cursorContainer = document.createElement("div");
-  Anchor.element.appendChild(cursorContainer);
+export default <RoomPlugin<RoomExtension>>{
+  name: "cursorPlugin",
+  dependencies: [anchorPlugin.name, namePlugin.name],
+  load() {
+    state.cursorContainer = document.createElement("div");
+    Anchor.element.appendChild(state.cursorContainer);
+  },
+  unload() {
+    state.cursorContainer?.remove();
+  },
+  processMessage(room, data: MouseMessage | SyncMessage, peerId) {
+    if (data?.type === "identification") {
+      room.peers[peerId].nameElement.innerHTML = data.name;
+    } else if (data?.type === "mouse_position") {
+      moveCursor(data.position, peerId, room);
+    } else if (data?.type === "mouse_press") {
+      room.peers[peerId].cursor.pressed = data.pressed;
+      room.peers[peerId].cursorImage.src = data.pressed ? drag : point;
+    }
+  },
+  selfSetup(room) {
+    room.self.cursor = { x: 0, y: 0, pressed: false };
 
-  function createCursor(): CursorElements {
-    const cursorElement = document.createElement("div");
-    const cursorImage = document.createElement("img");
-    const nameElement = document.createElement("p");
+    const cursorData = createCursor();
+    cursorData.nameElement.innerHTML = "me";
+    cursorData.nameElement.style.color = "#F2A07B";
+    room.self = { ...room.self, ...cursorData };
 
-    cursorElement.className = `cursor`;
-    cursorElement.style.left = cursorImage.style.top = "-99px";
-    cursorImage.src = point;
-    cursorImage.width = 24;
+    // hacky way to remove the cursor in all cases
+    const cursorStyle = document.createElement("style");
+    cursorStyle.innerHTML = `
+      * { cursor: none; }
 
-    cursorElement.appendChild(cursorImage);
-    cursorElement.appendChild(nameElement);
+      .cursor {
+          display: flex;
+          flex-direction: row;
+          position: absolute;
+          user-select: none;
+          pointer-events: none;
 
-    cursorContainer.appendChild(cursorElement);
+          margin-left: -7px;
+          margin-top: -4px;
 
-    return {
-      cursorElement,
-      cursorImage,
-      nameElement,
-    };
-  }
-
-  return {
-    processData(room, data: MouseMessage | SyncMessage, peerId) {
-      if (data?.type === "identification") {
-        room.peers[peerId].nameElement.innerHTML = data.name;
-      } else if (data?.type === "mouse_position") {
-        moveCursor(data.position, peerId, room);
-      } else if (data?.type === "mouse_press") {
-        room.peers[peerId].cursor.pressed = data.pressed;
-        room.peers[peerId].cursorImage.src = data.pressed ? drag : point;
+          align-items: center;
+          z-index: 99;
+      } .cursor > p {
+        margin: 0;
       }
-    },
-    selfSetup(room) {
-      room.self.cursor = { x: 0, y: 0, pressed: false };
+    `;
+    document.head.appendChild(cursorStyle);
 
-      const cursorData = createCursor();
-      cursorData.nameElement.innerHTML = "me";
-      cursorData.nameElement.style.color = "#F2A07B";
-      room.self = { ...room.self, ...cursorData };
-
-      // hacky way to remove the cursor in all cases
-      document.head.innerHTML += `
-            <style type="text/css">
-                * { cursor: none; }
-
-                .cursor {
-                    display: flex;
-                    flex-direction: row;
-                    position: absolute;
-                    user-select: none;
-                    pointer-events: none;
-
-                    margin-left: -7px;
-                    margin-top: -4px;
-
-                    align-items: center;
-                    z-index: 99;
-                } .cursor > p {
-                  margin: 0;
-                }
-            </style>
-            `;
-
-      window.addEventListener("mousemove", ({ clientX, clientY }) => {
-        room.self.cursor.x = clientX;
-        room.self.cursor.y = clientY;
-
-        const anchorPosition = Anchor.getPosition();
-        const message: MouseMessage = {
-          type: "mouse_position",
-          position: {
-            x: room.self.cursor.x - anchorPosition.x,
-            y: room.self.cursor.y - anchorPosition.y,
-          },
-        };
-        for (const id in room.peers) {
-          room.peers[id].connection.send(message);
-        }
-
-        moveCursor({ x: clientX, y: clientY }, room.self.id, room, true);
-      });
-
-      window.addEventListener("mousedown", () => {
-        room.self.cursorImage.src = drag;
-
-        const message: MouseMessage = {
-          type: "mouse_press",
-          pressed: true,
-        };
-        for (const id in room.peers) {
-          room.peers[id].connection.send(message);
-        }
-      });
-
-      window.addEventListener("mouseup", () => {
-        room.self.cursorImage.src = point;
-
-        const message: MouseMessage = {
-          type: "mouse_press",
-          pressed: false,
-        };
-        for (const id in room.peers) {
-          room.peers[id].connection.send(message);
-        }
-      });
-    },
-    peerSetup(room, peerId) {
-      room.peers[peerId].cursor = { x: 0, y: 0, pressed: false };
-
-      const cursorData = createCursor();
-      room.peers[peerId] = { ...room.peers[peerId], ...cursorData };
+    window.addEventListener("mousemove", ({ clientX, clientY }) => {
+      room.self.cursor.x = clientX;
+      room.self.cursor.y = clientY;
 
       const anchorPosition = Anchor.getPosition();
       const message: MouseMessage = {
@@ -159,13 +102,57 @@ export default function plugin(): RoomPlugin<null, RoomExtension> {
           y: room.self.cursor.y - anchorPosition.y,
         },
       };
-      room.peers[peerId].connection.send(message);
-    },
-    handlePeerDisconnect(room, peerId) {
-      room.peers[peerId].cursorElement.remove();
-    },
-  };
-}
+      for (const id in room.peers) {
+        room.peers[id].connection.send(message);
+      }
+
+      moveCursor({ x: clientX, y: clientY }, room.self.id, room, true);
+    });
+
+    window.addEventListener("mousedown", () => {
+      room.self.cursorImage.src = drag;
+
+      const message: MouseMessage = {
+        type: "mouse_press",
+        pressed: true,
+      };
+      for (const id in room.peers) {
+        room.peers[id].connection.send(message);
+      }
+    });
+
+    window.addEventListener("mouseup", () => {
+      room.self.cursorImage.src = point;
+
+      const message: MouseMessage = {
+        type: "mouse_press",
+        pressed: false,
+      };
+      for (const id in room.peers) {
+        room.peers[id].connection.send(message);
+      }
+    });
+  },
+  peerSetup(room, peerId) {
+    room.peers[peerId].cursor = { x: 0, y: 0, pressed: false };
+
+    const cursorData = createCursor();
+    room.peers[peerId] = { ...room.peers[peerId], ...cursorData };
+
+    const anchorPosition = Anchor.getPosition();
+    const message: MouseMessage = {
+      type: "mouse_position",
+      position: {
+        x: room.self.cursor.x - anchorPosition.x,
+        y: room.self.cursor.y - anchorPosition.y,
+      },
+    };
+    room.peers[peerId].connection.send(message);
+  },
+  handlePeerDisconnect(room, peerId) {
+    room.peers[peerId].cursorElement.remove();
+  },
+};
 
 function moveCursor(
   { x, y }: Vector2D,
@@ -184,4 +171,26 @@ function moveCursor(
     ref.cursorElement.style.top =
       ref.cursor.y + (isSelf ? -Anchor.element.offsetTop : 0) + "px";
   }
+}
+
+function createCursor(): CursorElements {
+  const cursorElement = document.createElement("div");
+  const cursorImage = document.createElement("img");
+  const nameElement = document.createElement("p");
+
+  cursorElement.className = `cursor`;
+  cursorElement.style.left = cursorImage.style.top = "-99px";
+  cursorImage.src = point;
+  cursorImage.width = 24;
+
+  cursorElement.appendChild(cursorImage);
+  cursorElement.appendChild(nameElement);
+
+  state.cursorContainer?.appendChild(cursorElement);
+
+  return {
+    cursorElement,
+    cursorImage,
+    nameElement,
+  };
 }

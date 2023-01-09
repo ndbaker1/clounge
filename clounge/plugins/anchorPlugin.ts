@@ -1,4 +1,4 @@
-import { RoomPlugin, Vector2D } from "index";
+import type { RoomPlugin, Vector2D } from "index";
 
 export class Anchor {
   static element: HTMLElement;
@@ -20,40 +20,43 @@ export class Anchor {
   }
 }
 
-export default function plugin(): RoomPlugin {
-  Anchor.element = document.createElement("div");
-  Anchor.element.style.position = "fixed";
-  Anchor.element.style.zIndex = String(99999);
-  Anchor.setPosition(0, 0);
+const state = {
+  mousepressed: false,
+  oldPosition: { x: 0, y: 0 },
+};
 
-  document.body.appendChild(Anchor.element);
+export default <RoomPlugin>{
+  name: "anchorPlugin",
+  load() {
+    Anchor.element = document.createElement("div");
+    Anchor.element.style.position = "fixed";
+    Anchor.element.style.zIndex = String(99999);
+    Anchor.setPosition(0, 0);
 
-  const state = {
-    mousepressed: false,
-    oldPosition: { x: 0, y: 0 },
-  };
+    document.body.appendChild(Anchor.element);
+  },
+  unload() {
+    Anchor.element.remove();
+  },
+  selfSetup() {
+    window.addEventListener("mousedown", ({ button }) => {
+      if (button === 1) state.mousepressed = true;
+    });
+    window.addEventListener("mouseup", ({ button }) => {
+      if (button === 1) state.mousepressed = false;
+    });
+    window.addEventListener("mousemove", ({ clientX, clientY }) => {
+      if (state.mousepressed) {
+        const delta: Vector2D = {
+          x: clientX - state.oldPosition.x,
+          y: clientY - state.oldPosition.y,
+        };
 
-  return {
-    selfSetup() {
-      window.addEventListener("mousedown", ({ button }) => {
-        if (button === 1) state.mousepressed = true;
-      });
-      window.addEventListener("mouseup", ({ button }) => {
-        if (button === 1) state.mousepressed = false;
-      });
-      window.addEventListener("mousemove", ({ clientX, clientY }) => {
-        if (state.mousepressed) {
-          const delta: Vector2D = {
-            x: clientX - state.oldPosition.x,
-            y: clientY - state.oldPosition.y,
-          };
+        Anchor.move(delta.x, delta.y);
+      }
 
-          Anchor.move(delta.x, delta.y);
-        }
-
-        state.oldPosition.x = clientX;
-        state.oldPosition.y = clientY;
-      });
-    },
-  };
-}
+      state.oldPosition.x = clientX;
+      state.oldPosition.y = clientY;
+    });
+  },
+};

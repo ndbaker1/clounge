@@ -2,7 +2,6 @@
   "name": "clounge",
   "version": "1.0.0",
   "description": "core data types for clounge",
-  "types": "index.d.ts",
   "scripts": {
     "format": "prettier --plugin-search-dir . --write ."
   },

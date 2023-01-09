@@ -4,7 +4,7 @@
 	import { type DataConnection, Peer } from 'peerjs';
 
 	import type { RoomPlugin, RoomData } from 'clounge';
-	import { defaultPlugins, loadPlugins } from 'clounge/plugins';
+	import { loadPlugins } from 'clounge/plugins';
 
 	const PLUGIN_URLS_KEY = 'pluginUrls';
 	const QUERY_PARAM_PEER_ID_KEY = 'peer';
@@ -26,7 +26,7 @@
 		const externalPlugins: string[] =
 			noErrorParseJSON(sessionStorage.getItem(PLUGIN_URLS_KEY)) ?? [];
 
-		const plugins: RoomPlugin[] = [...defaultPlugins(), ...(await loadPlugins(externalPlugins))];
+		const plugins: RoomPlugin[] = await loadPlugins(externalPlugins);
 
 		self.on('open', (id) => {
 			const room: RoomData = {
@@ -63,7 +63,7 @@
 
 				con.on('data', (data) => {
 					plugins.forEach(
-						(plugin) => plugin.processData && plugin.processData(room, data, con.peer)
+						(plugin) => plugin.processMessage && plugin.processMessage(room, data, con.peer)
 					);
 				});
 
