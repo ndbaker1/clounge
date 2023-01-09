@@ -1,15 +1,20 @@
 import type { RoomPlugin, Vector2D } from "index";
-import { Anchor } from "./anchorPlugin";
+import anchorPlugin, { Anchor } from "./anchorPlugin";
+import cursorPligin from "./cursorPlugin";
 import type { RoomExtension as CursorRoomExtension } from "./cursorPlugin";
 
-type ObjectSpawn = Vector2D & {
+export type SpawnObject = Vector2D & {
   id: number;
   width?: number;
   height?: number;
-  imgSrc: string;
+  imgSrc: {
+    front: string;
+    back: string;
+  };
+  draggable?: boolean;
 };
 
-type Message =
+export type ObjectMessage =
   | {
     type: "object_position";
     id: number;
@@ -17,35 +22,37 @@ type Message =
   }
   | {
     type: "object_spawn";
-    object: ObjectSpawn;
+    object: SpawnObject;
   };
 
 export type RoomExtension = CursorRoomExtension;
 export type ObjectExtension = {
-  objectData: ObjectSpawn;
+  objectData: SpawnObject;
   element: HTMLImageElement;
 };
 
-class State {
+class ObjectState {
   constructor(
-    public objectContainer: HTMLElement,
+    public objectContainer: HTMLElement = document.createElement("div"),
     // automatically keep track of the the next id to be created.
     public currentId = 0,
     public selectedObjectId = 0,
     public previousPosition: Vector2D = { x: 0, y: 0 }
-  ) { }
+  ) {
+    Anchor.element.appendChild(objectContainer);
+  }
 }
 
 const OBJECT_ID_ATTRIBUTE = "object-id";
 
-let state: State;
+let state: ObjectState;
 
-export function spawnObject(spawnData: ObjectSpawn): HTMLImageElement {
+export function spawnObject(spawnData: SpawnObject): HTMLImageElement {
   const element = document.createElement("img");
   element.setAttribute(OBJECT_ID_ATTRIBUTE, spawnData.id.toString());
   element.style.position = "absolute";
 
-  element.src = spawnData.imgSrc;
+  element.src = spawnData.imgSrc.front;
   if (spawnData.width) {
     element.width = spawnData.width;
   }
@@ -62,12 +69,11 @@ export function spawnObject(spawnData: ObjectSpawn): HTMLImageElement {
 
 export default <RoomPlugin<CursorRoomExtension, object, ObjectExtension>>{
   name: "objectsPlugin",
+  dependencies: [cursorPligin.name, anchorPlugin.name],
   load() {
-    const objectContainer = document.createElement("div");
-    state = new State(objectContainer);
-    Anchor.element.appendChild(objectContainer);
+    state = new ObjectState();
   },
-  processMessage(room, data: Message) {
+  processMessage(room, data: ObjectMessage) {
     if (data?.type === "object_position") {
       room.objects[data.id].objectData.x = data.position.x;
       room.objects[data.id].objectData.y = data.position.y;
@@ -97,26 +103,33 @@ export default <RoomPlugin<CursorRoomExtension, object, ObjectExtension>>{
     uploadButton.style.padding = "0.5rem 0.8rem";
     uploadButton.onclick = async () => {
       try {
-        const loadRequest: { url: string; count: number }[] = JSON.parse(
+        const loadRequest: (Partial<SpawnObject> & { count?: number })[] = JSON.parse(
           prompt(
             "enter json string of the type: Array<{ url: string, count: number }>"
           ) ?? "empty"
         );
 
-        loadRequest.forEach(({ url, count }) => {
-          for (let i = 0; i < count; i++) {
-            const objectData: ObjectSpawn = {
+        loadRequest.forEach((spawn) => {
+          for (let i = 0; i < (spawn.count ?? 1); i++) {
+            const objectData: SpawnObject = {
               id: ++state.currentId, // increment
               x: 300,
               y: 300,
-              width: 160,
-              imgSrc: url,
+              width: 120,
+              imgSrc: {
+                front: "https://placekitten.com/120/240",
+                back: "https://placekitten.com/120/240",
+              },
+              draggable: true,
+              // override any of the sane default with
+              // any of the values from the spawn object
+              ...spawn,
             };
 
             const element = spawnObject(objectData);
             room.objects[state.currentId] = { element, objectData };
 
-            const message: Message = {
+            const message: ObjectMessage = {
               type: "object_spawn",
               object: objectData,
             };
@@ -128,7 +141,7 @@ export default <RoomPlugin<CursorRoomExtension, object, ObjectExtension>>{
         });
       } catch {
         // Eh...
-        console.error("failed to load images..");
+        console.error("encountered issue loading an object.");
       }
     };
 
@@ -157,7 +170,7 @@ export default <RoomPlugin<CursorRoomExtension, object, ObjectExtension>>{
     });
 
     window.addEventListener("mousemove", () => {
-      if (state.selectedObjectId > 0) {
+      if (state.selectedObjectId > 0 && room.objects[state.selectedObjectId].objectData.draggable) {
         const delta: Vector2D = {
           x: room.self.cursor.x - state.previousPosition.x,
           y: room.self.cursor.y - state.previousPosition.y,
@@ -170,7 +183,7 @@ export default <RoomPlugin<CursorRoomExtension, object, ObjectExtension>>{
         room.objects[state.selectedObjectId].element.style.left =
           room.objects[state.selectedObjectId].objectData.x + "px";
 
-        const message: Message = {
+        const message: ObjectMessage = {
           type: "object_position",
           id: state.selectedObjectId,
           position: room.objects[state.selectedObjectId].objectData,
@@ -188,7 +201,7 @@ export default <RoomPlugin<CursorRoomExtension, object, ObjectExtension>>{
   },
   peerSetup(room, peerId) {
     for (const id in room.objects) {
-      const message: Message = {
+      const message: ObjectMessage = {
         type: "object_spawn",
         object: room.objects[id].objectData,
       };

@@ -18,6 +18,7 @@ export async function loadPlugins(
   externalPlugins: string[]
 ): Promise<RoomPlugin[]> {
   const plugins: RoomPlugin[] = [
+    objectsPlugin,
     peerRelayPlugin,
     themePlugin,
     cursorPlugin,
@@ -25,7 +26,6 @@ export async function loadPlugins(
     pluginManagerPlugin,
     namePlugin,
     anchorPlugin,
-    objectsPlugin,
   ];
 
   console.info("downloading any external plugins...");
