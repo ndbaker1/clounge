@@ -24,7 +24,7 @@ export default <RoomPlugin>{
       // @ts-ignore Import module
       import("https://esm.sh/monaco-editor")
         // useful hack to get type suggestion using devDep version of monaco
-        .then((monaco: typeof import("monaco-editor")) => {
+        .then((monaco) => {
           const editor = monaco.editor.create(editorWindow, {
             value: sessionStorage.getItem(PLUGINS_KEY) ?? "",
             language: "json",
