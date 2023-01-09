@@ -46,6 +46,7 @@
 	"ignorePatterns": [
 		"**/*.png",
 		"**/*.json",
+		"**/*.js",
 		"**/site"
 	]
 }
