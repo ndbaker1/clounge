@@ -1,17 +1,16 @@
-import type { RoomPlugin } from "clounge";
+import type { RoomPlugin } from "core";
 
-export type RoomExtension = {};
-export type PeerExtension = {};
-export type ObjectExtension = {};
+export type RoomExtension = object
+export type PeerExtension = object
+export type ObjectExtension = object
 
 export default <RoomPlugin<PeerExtension, RoomExtension, ObjectExtension>>{
-    name: "PLUGIN_NAME@VERSION",
-    dependencies: [],
-    load() { },
-    unload() { },
-    selfSetup(room) { },
-    peerSetup(room, peerId) { },
-    processMessage(room, data, peerId) { },
-    handlePeerDisconnect(room, peerId) { },
+	name: "PLUGIN_NAME@VERSION",
+	dependencies: [],
+	load() { return; },
+	unload() { return; },
+	selfSetup(room) { return; },
+	peerSetup(room, peerId) { return; },
+	processMessage(room, data, peerId) { return; },
+	handlePeerDisconnect(room, peerId) { return; },
 };
-
