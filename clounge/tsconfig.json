@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "outDir": "./dist",
     "baseUrl": ".",
     "target": "ESNext",
     "module": "ESNext",
@@ -10,6 +9,8 @@
     "declaration": true,
     "isolatedModules": true,
     "skipLibCheck": true,
+    "declarationMap": true,
+    "emitDeclarationOnly": true,
     "importsNotUsedAsValues": "error",
     "strict": true
   },

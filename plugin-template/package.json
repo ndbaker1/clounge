@@ -3,7 +3,7 @@
     "package": "tsc -p tsconfig.json"
   },
   "devDependencies": {
-    "clounge": "file:../clounge",
+    "clounge": "https://gitpkg.now.sh/ndbaker1/clounge/clounge?main",
     "typescript": "^4.9.4"
   }
 }
