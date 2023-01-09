@@ -1,4 +1,5 @@
 build
+*.d.ts*
 
 # Logs
 logs
