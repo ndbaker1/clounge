@@ -1,19 +1,19 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount } from "svelte";
 
-	import { type DataConnection, Peer } from 'peerjs';
+	import { type DataConnection, Peer } from "peerjs";
 
-	import type { RoomPlugin, RoomData } from 'clounge';
-	import { loadPlugins } from 'clounge/plugins';
+	import type { RoomData } from "clounge-types";
+	import { PluginManager } from "clounge-plugins";
 
-	const PLUGIN_URLS_KEY = 'pluginUrls';
-	const QUERY_PARAM_PEER_ID_KEY = 'peer';
+	const PLUGIN_URLS_KEY = "pluginUrls";
+	const QUERY_PARAM_PEER_ID_KEY = "peer";
 
-	function noErrorParseJSON(json: string | null) {
+	function noErrorParseJSON(json: string | null): string[] | null {
 		try {
-			return JSON.parse(json ?? '');
+			return JSON.parse(json ?? "");
 		} catch {
-			console.error('failed to parse plugin-json:', json);
+			console.error("failed to parse plugin-json:", json);
 			return null;
 		}
 	}
@@ -23,12 +23,10 @@
 		const peer = params.get(QUERY_PARAM_PEER_ID_KEY);
 		const self = new Peer();
 
-		const externalPlugins: string[] =
-			noErrorParseJSON(sessionStorage.getItem(PLUGIN_URLS_KEY)) ?? [];
+		const externalPlugins = noErrorParseJSON(sessionStorage.getItem(PLUGIN_URLS_KEY)) ?? [];
+		const plugins = await PluginManager.loadPlugins(externalPlugins);
 
-		const plugins: RoomPlugin[] = await loadPlugins(externalPlugins);
-
-		self.on('open', (id) => {
+		self.on("open", (id) => {
 			const room: RoomData = {
 				objects: {},
 				peers: {},
@@ -37,15 +35,17 @@
 					connect: (peer) => {
 						const peerCon = self.connect(peer);
 						setupPeerDataHandler(peerCon);
-					}
-				}
+					},
+				},
 			};
 
-			self.on('connection', (con) => {
+			self.on("connection", (con) => {
 				setupPeerDataHandler(con);
 			});
 
-			plugins.forEach((plugin) => plugin.selfSetup && plugin.selfSetup(room));
+			plugins.forEach(
+				(plugin) => plugin.selfSetup && plugin.selfSetup(room)
+			);
 
 			window.onbeforeunload = () => {
 				for (const peer in room.peers) {
@@ -56,36 +56,33 @@
 			if (peer) room.self.connect(peer);
 
 			function setupPeerDataHandler(con: DataConnection) {
-				con.on('open', () => {
+				con.on("open", () => {
 					room.peers[con.peer] = { connection: con };
-					plugins.forEach((plugin) => plugin.peerSetup && plugin.peerSetup(room, con.peer));
+					plugins.forEach(
+						(plugin) =>
+							plugin.peerSetup && plugin.peerSetup(room, con.peer)
+					);
 				});
 
-				con.on('data', (data) => {
+				con.on("data", (data) => {
 					plugins.forEach(
-						(plugin) => plugin.processMessage && plugin.processMessage(room, data, con.peer)
+						(plugin) =>
+							plugin.processMessage &&
+							plugin.processMessage(room, data, con.peer)
 					);
 				});
 
 				function handlePeerDisconnect() {
 					plugins.forEach(
-						(plugin) => plugin.handlePeerDisconnect && plugin.handlePeerDisconnect(room, con.peer)
+						(plugin) =>
+							plugin.handlePeerDisconnect &&
+							plugin.handlePeerDisconnect(room, con.peer)
 					);
 					delete room.peers[con.peer];
 				}
-				con.on('close', handlePeerDisconnect);
-				con.on('error', handlePeerDisconnect);
+				con.on("close", handlePeerDisconnect);
+				con.on("error", handlePeerDisconnect);
 			}
 		});
 	});
 </script>
-
-<style global>
-	@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300&display=swap');
-
-	* {
-		font-family: 'JetBrains Mono', monospace;
-		-webkit-user-drag: none;
-		user-select: none;
-	}
-</style>

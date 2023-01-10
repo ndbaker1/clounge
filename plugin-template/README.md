@@ -10,7 +10,8 @@ npm install
 
 Then edit [plugin.ts](./plugin.ts) with plugin logic while utilizing types from the `clounge` library core.
 
-## Build 
+## Build
+
 To build the plugin, run the npm script:
 
 ```bash

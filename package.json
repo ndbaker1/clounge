@@ -1,0 +1,25 @@
+{
+  "name": "clounge",
+  "version": "1.0.0",
+  "description": "peer2peer lounge supportings user plugins",
+  "scripts": {
+    "format": "eslint . --ignore-path .gitignore --fix",
+    "dev": "concurrently --kill-others \"cd site && npm run dev\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ndbaker1/clounge.git"
+  },
+  "author": "Nicholas Baker",
+  "bugs": {
+    "url": "https://github.com/ndbaker1/clounge/issues"
+  },
+  "homepage": "https://github.com/ndbaker1/clounge#readme",
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.48.1",
+    "@typescript-eslint/parser": "^5.48.1",
+    "concurrently": "^7.6.0",
+    "eslint": "^8.31.0",
+    "typescript": "^4.9.4"
+  }
+}
