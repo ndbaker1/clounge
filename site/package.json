@@ -30,7 +30,8 @@
 		"vite": "^4.0.0"
 	},
 	"dependencies": {
-		"clounge-core": "file:../core",
+		"clounge-types": "file:../types",
+		"clounge-plugins": "file:../plugins",
 		"peerjs": "^1.4.7"
 	}
 }

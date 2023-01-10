@@ -3,12 +3,13 @@
 
 	import { type DataConnection, Peer } from "peerjs";
 
-	import { loadPlugins, type RoomData, type RoomPlugin } from "clounge-core";
+	import type { RoomData } from "clounge-types";
+	import { PluginManager } from "clounge-plugins";
 
 	const PLUGIN_URLS_KEY = "pluginUrls";
 	const QUERY_PARAM_PEER_ID_KEY = "peer";
 
-	function noErrorParseJSON(json: string | null) {
+	function noErrorParseJSON(json: string | null): string[] | null {
 		try {
 			return JSON.parse(json ?? "");
 		} catch {
@@ -22,10 +23,8 @@
 		const peer = params.get(QUERY_PARAM_PEER_ID_KEY);
 		const self = new Peer();
 
-		const externalPlugins: string[] =
-			noErrorParseJSON(sessionStorage.getItem(PLUGIN_URLS_KEY)) ?? [];
-
-		const plugins: RoomPlugin[] = await loadPlugins(externalPlugins);
+		const externalPlugins = noErrorParseJSON(sessionStorage.getItem(PLUGIN_URLS_KEY)) ?? [];
+		const plugins = await PluginManager.loadPlugins(externalPlugins);
 
 		self.on("open", (id) => {
 			const room: RoomData = {
