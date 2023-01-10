@@ -1,4 +1,13 @@
 import type { RoomPlugin } from "types";
+import infoWindow from "./src/infoWindow";
+import names from "./src/names";
+import objectLoader from "./src/objectLoader";
+import peerCursors from "./src/peerCursors";
+import peerRelaying from "./src/peerRelaying";
+import pluginManager from "./src/pluginManager";
+import roomSharing from "./src/roomSharing";
+import theme from "./src/theme";
+import viewportAnchor from "./src/viewportAnchor";
 
 export class PluginManager {
     /**
@@ -26,6 +35,16 @@ export class PluginManager {
                 return pluginModule.default;
             }),
         );
+
+        plugins.push(viewportAnchor);
+        plugins.push(infoWindow);
+        plugins.push(names);
+        plugins.push(objectLoader);
+        plugins.push(peerCursors);
+        plugins.push(peerRelaying);
+        plugins.push(pluginManager);
+        plugins.push(roomSharing);
+        plugins.push(theme);
 
         if (plugins.length > 0) {
             console.info("%c" + this.tag("validating plugins dependencies..."), "color: #f04");
