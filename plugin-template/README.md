@@ -7,6 +7,10 @@ Typescript is used in the build process to make type completion automatic, which
 
 ## Quickstart ⏩
 
+First, go ahead and clone the repository. This will give you all the source for types and etc to make development easy. This may be streamlined with an npm plugin in the future.
+
+--- 
+
 Edit [plugin.ts](./plugin.ts) with plugin logic while utilizing **ONLY** `type` imports from the [types](../types/) or [plugins](../plugins/) libraries.
 
 If you want to use external imports and get their types, consider using a [dynamic import](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/import) with a `devDependency`. It would look something like the following
