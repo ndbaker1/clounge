@@ -39,10 +39,13 @@
 				},
 			};
 
+<<<<<<< HEAD
 			plugins.forEach(
 				(plugin) => plugin.initialize && plugin.initialize(room)
 			);
 
+=======
+>>>>>>> 23254544a7c0e3f0693f80eb8614e097096afddf
 			self.on("connection", (con) => {
 				setupPeerDataHandler(con);
 			});

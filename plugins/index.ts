@@ -21,7 +21,6 @@ export class PluginManager {
      * @returns a list of RoomPlugins
      */
     static async loadPlugins(externalPlugins: string[]): Promise<RoomPlugin[]> {
-
         if (externalPlugins.length > 0) console.info("%c" + this.tag("downloading external plugins..."), "color: #f72");
 
         const plugins = await Promise.all(

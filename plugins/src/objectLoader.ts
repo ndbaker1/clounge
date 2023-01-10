@@ -60,6 +60,7 @@ export default <RoomPlugin<ObjectLoaderPeerExtension, ObjectLoaderRoomExtension,
             room.objects[data.id].objectData.y = data.position.y;
             room.objects[data.id].element.style.top = data.position.y + "px";
             room.objects[data.id].element.style.left = data.position.x + "px";
+<<<<<<< HEAD
             room.objectLoaderPlugin.updateId(data.id);
         } else if (data?.type === "object_spawn") {
             room.objectLoaderPlugin.spawnObject(data.object);
@@ -108,6 +109,15 @@ export default <RoomPlugin<ObjectLoaderPeerExtension, ObjectLoaderRoomExtension,
             },
         };
 
+=======
+            ObjectState.updateId(data.id);
+        } else if (data?.type === "object_spawn") {
+            spawnObject(room, data.object);
+            ObjectState.updateId(data.object.id);
+        }
+    },
+    selfSetup(room) {
+>>>>>>> 23254544a7c0e3f0693f80eb8614e097096afddf
         // button that allows you to bulk load using a formatted json
         const uploadContainer = document.createElement("div");
         uploadContainer.style.position = "fixed";
@@ -127,7 +137,11 @@ export default <RoomPlugin<ObjectLoaderPeerExtension, ObjectLoaderRoomExtension,
                 loadRequest.forEach((spawn) => {
                     for (let i = 0; i < (spawn.count ?? 1); i++) {
                         const objectData: ObjectDescriptor = {
+<<<<<<< HEAD
                             id: ++room.objectLoaderPlugin.currentId, // increment
+=======
+                            id: ++ObjectState.currentId, // increment
+>>>>>>> 23254544a7c0e3f0693f80eb8614e097096afddf
                             x: 300,
                             y: 300,
                             width: 120,
@@ -141,7 +155,11 @@ export default <RoomPlugin<ObjectLoaderPeerExtension, ObjectLoaderRoomExtension,
                             ...spawn,
                         };
 
+<<<<<<< HEAD
                         room.objectLoaderPlugin.spawnObject(objectData);
+=======
+                        spawnObject(room, objectData);
+>>>>>>> 23254544a7c0e3f0693f80eb8614e097096afddf
 
                         const message: ObjectMessage = {
                             type: "object_spawn",
@@ -153,9 +171,15 @@ export default <RoomPlugin<ObjectLoaderPeerExtension, ObjectLoaderRoomExtension,
                         }
                     }
                 });
+<<<<<<< HEAD
             } catch (e) {
                 // Eh...
                 console.error("encountered issue loading an object.", e);
+=======
+            } catch {
+                // Eh...
+                console.error("encountered issue loading an object.");
+>>>>>>> 23254544a7c0e3f0693f80eb8614e097096afddf
             }
         };
 
@@ -168,18 +192,27 @@ export default <RoomPlugin<ObjectLoaderPeerExtension, ObjectLoaderRoomExtension,
                 const hoveredElement = document.elementFromPoint(room.self.cursor.x, room.self.cursor.y);
                 const elementId = parseInt(hoveredElement?.getAttribute(OBJECT_ID_ATTRIBUTE) ?? "");
 
+<<<<<<< HEAD
                 room.objectLoaderPlugin.selectedObjectId = elementId;
+=======
+                ObjectState.selectedObjectId = elementId;
+>>>>>>> 23254544a7c0e3f0693f80eb8614e097096afddf
             }
         });
 
         window.addEventListener("mouseup", ({ button }) => {
             if (button === 0) {
+<<<<<<< HEAD
                 room.objectLoaderPlugin.selectedObjectId = 0;
+=======
+                ObjectState.selectedObjectId = 0;
+>>>>>>> 23254544a7c0e3f0693f80eb8614e097096afddf
             }
         });
 
         window.addEventListener("mousemove", () => {
             if (
+<<<<<<< HEAD
                 room.objectLoaderPlugin.selectedObjectId > 0 &&
                 room.objects[room.objectLoaderPlugin.selectedObjectId].objectData.draggable === true
             ) {
@@ -199,6 +232,27 @@ export default <RoomPlugin<ObjectLoaderPeerExtension, ObjectLoaderRoomExtension,
                     type: "object_position",
                     id: room.objectLoaderPlugin.selectedObjectId,
                     position: room.objects[room.objectLoaderPlugin.selectedObjectId].objectData,
+=======
+                ObjectState.selectedObjectId > 0 &&
+                room.objects[ObjectState.selectedObjectId].objectData.draggable === true
+            ) {
+                const delta: Vector2D = {
+                    x: room.self.cursor.x - ObjectState.previousPosition.x,
+                    y: room.self.cursor.y - ObjectState.previousPosition.y,
+                };
+
+                room.objects[ObjectState.selectedObjectId].objectData.x += delta.x;
+                room.objects[ObjectState.selectedObjectId].objectData.y += delta.y;
+                room.objects[ObjectState.selectedObjectId].element.style.top =
+                    room.objects[ObjectState.selectedObjectId].objectData.y + "px";
+                room.objects[ObjectState.selectedObjectId].element.style.left =
+                    room.objects[ObjectState.selectedObjectId].objectData.x + "px";
+
+                const message: ObjectMessage = {
+                    type: "object_position",
+                    id: ObjectState.selectedObjectId,
+                    position: room.objects[ObjectState.selectedObjectId].objectData,
+>>>>>>> 23254544a7c0e3f0693f80eb8614e097096afddf
                 };
 
                 for (const id in room.peers) {
@@ -207,8 +261,13 @@ export default <RoomPlugin<ObjectLoaderPeerExtension, ObjectLoaderRoomExtension,
             }
 
             // element-wise copy to avoid aliasing
+<<<<<<< HEAD
             room.objectLoaderPlugin.previousPosition.x = room.self.cursor.x;
             room.objectLoaderPlugin.previousPosition.y = room.self.cursor.y;
+=======
+            ObjectState.previousPosition.x = room.self.cursor.x;
+            ObjectState.previousPosition.y = room.self.cursor.y;
+>>>>>>> 23254544a7c0e3f0693f80eb8614e097096afddf
         });
     },
     peerSetup(room, peerId) {
