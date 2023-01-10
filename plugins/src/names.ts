@@ -5,9 +5,11 @@ export type SyncMessage = {
     name: string;
 };
 
-export type RoomExtension = { name: string };
+export type NamePeerExtension = { name: string };
 
-export default <RoomPlugin<RoomExtension>>{
+const elementRefs: HTMLElement[] = [];
+
+export default <RoomPlugin<NamePeerExtension>>{
     name: "names",
     processMessage(room, data: SyncMessage, peerId) {
         if (data?.type === "identification") {
@@ -21,7 +23,7 @@ export default <RoomPlugin<RoomExtension>>{
         };
         room.peers[peerId].connection.send(message);
     },
-    selfSetup(room) {
+    initialize(room) {
         const nameContainer = document.createElement("div");
         nameContainer.style.position = "fixed";
         nameContainer.style.top = "0";
@@ -44,5 +46,10 @@ export default <RoomPlugin<RoomExtension>>{
         };
         nameContainer.appendChild(nameField);
         document.body.appendChild(nameContainer);
+
+        elementRefs.push(nameContainer);
+    },
+    cleanup() {
+        elementRefs.forEach(e => e.remove());
     },
 };

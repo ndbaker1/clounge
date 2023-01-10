@@ -4,7 +4,7 @@ import type { RoomPlugin } from "types";
 
 export default <RoomPlugin>{
     name: "theme",
-    selfSetup() {
+    initialize() {
         document.body.style.backgroundColor = "#322F3D";
         document.body.style.color = "white";
 

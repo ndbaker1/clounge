@@ -39,6 +39,10 @@
 				},
 			};
 
+			plugins.forEach(
+				(plugin) => plugin.initialize && plugin.initialize(room)
+			);
+
 			self.on("connection", (con) => {
 				setupPeerDataHandler(con);
 			});

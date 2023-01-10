@@ -27,16 +27,16 @@ type ConnectedSelf = {
 /**
  * Type Alias for Peer IDs to keep things consistent
  */
-type PeerID = string;
+export type PeerID = string;
 
 /**
  * Generic Type representing the structure of data stored within each Client.
  */
 export type RoomData<
 	PeerExtension = object,
-	BaseExtension = object,
+	RoomExtension = object,
 	ObjectExtension = object,
-> = BaseExtension & {
+> = RoomExtension & {
 	/**
 	 * Attributes stored about the User,
 	 */
@@ -56,7 +56,7 @@ export type RoomData<
  */
 export type RoomPlugin<
 	PeerExtension = object,
-	BaseExtension = object,
+	RoomExtension = object,
 	ObjectExtension = object,
 > = {
 	/**
@@ -68,24 +68,20 @@ export type RoomPlugin<
 	 */
 	dependencies?: string[];
 	/**
-	 * Initialization for the plugin
-	 */
-	load?(): void;
-	/**
 	 * Cleanup procedure for the plugin
 	 */
-	unload?(): void;
+	cleanup?(room: RoomData<PeerExtension, RoomExtension, ObjectExtension>): void;
 	/**
 	 * Setup for self upon connecting
 	 * @param room RoomData reference
 	 */
-	selfSetup?(room: RoomData<PeerExtension, BaseExtension, ObjectExtension>): void;
+	initialize?(room: RoomData<PeerExtension, RoomExtension, ObjectExtension>): void;
 	/**
 	 * Setup for peers when connecting to self
 	 * @param room RoomData reference
 	 * @param peerId ID of the connecting peer
 	 */
-	peerSetup?(room: RoomData<PeerExtension, BaseExtension, ObjectExtension>, peerId: PeerID): void;
+	peerSetup?(room: RoomData<PeerExtension, RoomExtension, ObjectExtension>, peerId: PeerID): void;
 	/**
 	 * Handler for incoming messages from peers
 	 * @param room RoomData reference
@@ -93,7 +89,7 @@ export type RoomPlugin<
 	 * @param peerId ID of the peer which the data comes from
 	 */
 	processMessage?<T = object>(
-		room: RoomData<PeerExtension, BaseExtension, ObjectExtension>,
+		room: RoomData<PeerExtension, RoomExtension, ObjectExtension>,
 		data: T,
 		peerId: PeerID,
 	): void;
@@ -103,7 +99,7 @@ export type RoomPlugin<
 	 * @param peerId ID the peer
 	 */
 	handlePeerDisconnect?(
-		room: RoomData<PeerExtension, BaseExtension, ObjectExtension>,
+		room: RoomData<PeerExtension, RoomExtension, ObjectExtension>,
 		peerId: PeerID,
 	): void;
 };
