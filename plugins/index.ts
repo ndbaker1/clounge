@@ -47,23 +47,15 @@ export class PluginManager {
         plugins.push(theme);
 
         if (plugins.length > 0) {
-            console.info("%c" + this.tag("validating plugins dependencies..."), "color: #f04");
+            console.info("%c" + this.tag("validating and ordering plugins..."), "color: #d45");
             this.availablePlugins = this.availablePlugins.concat(this.getSortedPlugins(plugins));
             console.info(
-                "%c" + this.tag(`resolved plugin ordering:\n%c${this.availablePlugins
+                "%c" + this.tag(`loading order resolved:\n%c${this.availablePlugins
                     .map((plugin, index) => `\t${index + 1}. ${plugin.name}`)
                     .join("\n")}`),
                 "color: #0dd",
                 "color: white",
             );
-
-            console.info("%c" + this.tag("bootstrapping plugins..."), "color: #08f");
-            this.availablePlugins.forEach((plugin) => {
-                if (plugin.load) {
-                    console.info(`\t[${plugin.name}]`);
-                    plugin.load();
-                }
-            });
         }
 
         console.info("%c" + this.tag("finished loading plugins!"), "color: #0e0");

@@ -1,7 +1,7 @@
-import type { RoomData, RoomPlugin, Vector2D } from "types";
+import type { PeerID, RoomPlugin, Vector2D } from "types";
 
-import type { SyncMessage, RoomExtension as NameRoomExtension } from "./names";
-import anchorPlugin, { Anchor } from "./viewportAnchor";
+import type { SyncMessage, NamePeerExtension } from "./names";
+import type { ViewportAnchorRoomExtension } from "./viewportAnchor";
 
 // @ts-ignore
 import drag from "../assets/drag.png";
@@ -9,6 +9,7 @@ import drag from "../assets/drag.png";
 import point from "../assets/point.png";
 
 import namePlugin from "./names";
+import viewportAnchorPlugin from "./viewportAnchor";
 
 export type CursorData = Vector2D & {
     pressed: boolean;
@@ -30,39 +31,77 @@ type CursorElements = {
     nameElement: HTMLParagraphElement;
 };
 
-export type RoomExtension = CursorElements & {
+export type CursorPeerExtension = CursorElements & {
     cursor: CursorData;
-} & NameRoomExtension;
+} & NamePeerExtension;
 
-const state = {
-    cursorContainer: <HTMLElement | null>null,
-};
+export type CursorRoomExtension = {
+    cursorPlugin: {
+        cursorContainer?: HTMLElement;
+        createCursor: () => CursorElements;
+        moveCursor: (pos: Vector2D, id: PeerID, isSelf?: boolean) => void;
+    };
+} & ViewportAnchorRoomExtension;
 
-export default <RoomPlugin<RoomExtension>>{
+export default <RoomPlugin<CursorPeerExtension, CursorRoomExtension>>{
     name: "peerCursors",
-    dependencies: [anchorPlugin.name, namePlugin.name],
-    load() {
-        state.cursorContainer = document.createElement("div");
-        if (!Anchor.element) throw Error("anchor not initialized!");
-        Anchor.element.appendChild(state.cursorContainer);
-    },
-    unload() {
-        state.cursorContainer?.remove();
-    },
+    dependencies: [viewportAnchorPlugin.name, namePlugin.name],
     processMessage(room, data: MouseMessage | SyncMessage, peerId) {
         if (data?.type === "identification") {
             room.peers[peerId].nameElement.innerHTML = data.name;
         } else if (data?.type === "mouse_position") {
-            moveCursor(data.position, peerId, room);
+            room.cursorPlugin.moveCursor(data.position, peerId);
         } else if (data?.type === "mouse_press") {
             room.peers[peerId].cursor.pressed = data.pressed;
             room.peers[peerId].cursorImage.src = data.pressed ? drag : point;
         }
     },
-    selfSetup(room) {
+    initialize(room) {
+        const cursorContainer = document.createElement("div");
+        if (!room.viewportAnchorPlugin.elementRef) throw Error("anchor not initialized!");
+        room.viewportAnchorPlugin.elementRef.appendChild(cursorContainer);
+
+        // ROOM DATA INITIALIZED
+        room.cursorPlugin = {
+            cursorContainer,
+            createCursor: () => {
+                const cursorElement = document.createElement("div");
+                const cursorImage = document.createElement("img");
+                const nameElement = document.createElement("p");
+
+                cursorElement.className = "cursor";
+                cursorElement.style.left = cursorImage.style.top = "-99px";
+                cursorImage.src = point;
+                cursorImage.width = 24;
+
+                cursorElement.appendChild(cursorImage);
+                cursorElement.appendChild(nameElement);
+
+                room.cursorPlugin.cursorContainer?.appendChild(cursorElement);
+
+                return {
+                    cursorElement,
+                    cursorImage,
+                    nameElement,
+                };
+            },
+            moveCursor: ({ x, y }: Vector2D, id: string, isSelf = false) => {
+                const ref = isSelf ? room.self : room.peers[id];
+
+                ref.cursor.x = x;
+                ref.cursor.y = y;
+
+                const anchorRef = room.viewportAnchorPlugin.elementRef;
+                if (anchorRef) {
+                    ref.cursorElement.style.left = ref.cursor.x + (isSelf ? -anchorRef.offsetLeft : 0) + "px";
+                    ref.cursorElement.style.top = ref.cursor.y + (isSelf ? -anchorRef.offsetTop : 0) + "px";
+                }
+            },
+        };
+
         room.self.cursor = { x: 0, y: 0, pressed: false };
 
-        const cursorData = createCursor();
+        const cursorData = room.cursorPlugin.createCursor();
         cursorData.nameElement.innerHTML = "me";
         cursorData.nameElement.style.color = "#F2A07B";
         room.self = { ...room.self, ...cursorData };
@@ -70,43 +109,42 @@ export default <RoomPlugin<RoomExtension>>{
         // hacky way to remove the cursor in all cases
         const cursorStyle = document.createElement("style");
         cursorStyle.innerHTML = `
-      * { cursor: none; }
+        * { cursor: none; }
 
-      .cursor {
-          display: flex;
-          flex-direction: row;
-          position: absolute;
-          user-select: none;
-          pointer-events: none;
+        .cursor {
+            display: flex;
+            flex-direction: row;
+            position: absolute;
+            user-select: none;
+            pointer-events: none;
 
-          margin-left: -7px;
-          margin-top: -4px;
+            margin-left: -7px;
+            margin-top: -4px;
 
-          align-items: center;
-          z-index: 99;
-      } .cursor > p {
-        margin: 0;
-      }
-    `;
+            align-items: center;
+            z-index: 99;
+        } .cursor > p {
+            margin: 0;
+        }
+        `;
         document.head.appendChild(cursorStyle);
 
         window.addEventListener("mousemove", ({ clientX, clientY }) => {
             room.self.cursor.x = clientX;
             room.self.cursor.y = clientY;
 
-            const anchorPosition = Anchor.getPosition();
             const message: MouseMessage = {
                 type: "mouse_position",
                 position: {
-                    x: room.self.cursor.x - anchorPosition.x,
-                    y: room.self.cursor.y - anchorPosition.y,
+                    x: room.self.cursor.x - room.viewportAnchorPlugin.position.x,
+                    y: room.self.cursor.y - room.viewportAnchorPlugin.position.y,
                 },
             };
             for (const id in room.peers) {
                 room.peers[id].connection.send(message);
             }
 
-            moveCursor({ x: clientX, y: clientY }, room.self.id, room, true);
+            room.cursorPlugin.moveCursor({ x: clientX, y: clientY }, room.self.id, true);
         });
 
         window.addEventListener("mousedown", () => {
@@ -136,15 +174,14 @@ export default <RoomPlugin<RoomExtension>>{
     peerSetup(room, peerId) {
         room.peers[peerId].cursor = { x: 0, y: 0, pressed: false };
 
-        const cursorData = createCursor();
+        const cursorData = room.cursorPlugin.createCursor();
         room.peers[peerId] = { ...room.peers[peerId], ...cursorData };
 
-        const anchorPosition = Anchor.getPosition();
         const message: MouseMessage = {
             type: "mouse_position",
             position: {
-                x: room.self.cursor.x - anchorPosition.x,
-                y: room.self.cursor.y - anchorPosition.y,
+                x: room.self.cursor.x - room.viewportAnchorPlugin.position.x,
+                y: room.self.cursor.y - room.viewportAnchorPlugin.position.y,
             },
         };
         room.peers[peerId].connection.send(message);
@@ -152,38 +189,7 @@ export default <RoomPlugin<RoomExtension>>{
     handlePeerDisconnect(room, peerId) {
         room.peers[peerId].cursorElement.remove();
     },
+    cleanup(room) {
+        room.cursorPlugin.cursorContainer?.remove();
+    },
 };
-
-function moveCursor({ x, y }: Vector2D, id: string, room: RoomData<RoomExtension>, isSelf = false) {
-    const ref = isSelf ? room.self : room.peers[id];
-
-    ref.cursor.x = x;
-    ref.cursor.y = y;
-
-    if (Anchor.element) {
-        ref.cursorElement.style.left = ref.cursor.x + (isSelf ? -Anchor.element.offsetLeft : 0) + "px";
-        ref.cursorElement.style.top = ref.cursor.y + (isSelf ? -Anchor.element.offsetTop : 0) + "px";
-    }
-}
-
-function createCursor(): CursorElements {
-    const cursorElement = document.createElement("div");
-    const cursorImage = document.createElement("img");
-    const nameElement = document.createElement("p");
-
-    cursorElement.className = "cursor";
-    cursorElement.style.left = cursorImage.style.top = "-99px";
-    cursorImage.src = point;
-    cursorImage.width = 24;
-
-    cursorElement.appendChild(cursorImage);
-    cursorElement.appendChild(nameElement);
-
-    state.cursorContainer?.appendChild(cursorElement);
-
-    return {
-        cursorElement,
-        cursorImage,
-        nameElement,
-    };
-}

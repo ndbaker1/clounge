@@ -1,5 +1,5 @@
 {
     "scripts": {
-        "package": "tsc -p tsconfig-package.json"
+        "build": "tsc -p tsconfig-build.json"
     }
 }

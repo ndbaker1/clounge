@@ -4,7 +4,7 @@ const PLUGINS_KEY = "pluginUrls";
 
 export default <RoomPlugin>{
     name: "pluginManager",
-    load() {
+    initialize() {
         if (typeof window !== "undefined") {
             const marginOffset = "-50%";
 
