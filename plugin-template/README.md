@@ -42,4 +42,10 @@ npm run build
 
 This will output a Javascript module at `build/plugin-template/plugin.js`, which you can upload to any file hosting service and provide its URI for the app to load.
 
-> You could go ahead and just commit this `plugin.js` file if you want to use github raw file links as your plugin URL
+You can build and serve this plugin file, and use the live website to test plugins by running:
+
+```bash
+npm run build:watch & npm run serve
+```
+
+> You could go ahead and just commit this `plugin.js` file if you want to use github raw file links as your persisting plugin URL
