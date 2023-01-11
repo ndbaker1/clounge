@@ -37,7 +37,7 @@ export type CursorPeerExtension = CursorElements & {
 
 export type CursorRoomExtension = {
     cursorPlugin: {
-        cursorContainer?: HTMLElement;
+        cursorContainer: HTMLElement;
         createCursor: () => CursorElements;
         moveCursor: (pos: Vector2D, id: PeerID, isSelf?: boolean) => void;
     };
@@ -58,7 +58,8 @@ export default <RoomPlugin<CursorPeerExtension, CursorRoomExtension>>{
     },
     initialize(room) {
         const cursorContainer = document.createElement("div");
-        if (!room.viewportAnchorPlugin.elementRef) throw Error("anchor not initialized!");
+        cursorContainer.style.position = "relative";
+        cursorContainer.style.zIndex = String(9999);
         room.viewportAnchorPlugin.elementRef.appendChild(cursorContainer);
 
         // ROOM DATA INITIALIZED
@@ -72,7 +73,7 @@ export default <RoomPlugin<CursorPeerExtension, CursorRoomExtension>>{
                 cursorElement.className = "cursor";
                 cursorElement.style.left = cursorImage.style.top = "-99px";
                 cursorImage.src = point;
-                cursorImage.width = 24;
+                cursorImage.width = 16;
 
                 cursorElement.appendChild(cursorImage);
                 cursorElement.appendChild(nameElement);
@@ -92,10 +93,8 @@ export default <RoomPlugin<CursorPeerExtension, CursorRoomExtension>>{
                 ref.cursor.y = y;
 
                 const anchorRef = room.viewportAnchorPlugin.elementRef;
-                if (anchorRef) {
-                    ref.cursorElement.style.left = ref.cursor.x + (isSelf ? -anchorRef.offsetLeft : 0) + "px";
-                    ref.cursorElement.style.top = ref.cursor.y + (isSelf ? -anchorRef.offsetTop : 0) + "px";
-                }
+                ref.cursorElement.style.left = ref.cursor.x + (isSelf ? -anchorRef.offsetLeft : 0) + "px";
+                ref.cursorElement.style.top = ref.cursor.y + (isSelf ? -anchorRef.offsetTop : 0) + "px";
             },
         };
 
@@ -109,23 +108,23 @@ export default <RoomPlugin<CursorPeerExtension, CursorRoomExtension>>{
         // hacky way to remove the cursor in all cases
         const cursorStyle = document.createElement("style");
         cursorStyle.innerHTML = `
-        * { cursor: none; }
+            * { cursor: none; }
 
-        .cursor {
-            display: flex;
-            flex-direction: row;
-            position: absolute;
-            user-select: none;
-            pointer-events: none;
+            .cursor {
+                display: flex;
+                flex-direction: row;
+                position: absolute;
+                user-select: none;
+                pointer-events: none;
 
-            margin-left: -7px;
-            margin-top: -4px;
+                margin-left: -5px;
+                margin-top: -4px;
 
-            align-items: center;
-            z-index: 99;
-        } .cursor > p {
-            margin: 0;
-        }
+                align-items: center;
+                z-index: 99;
+            } .cursor > p {
+                margin: 0;
+            }
         `;
         document.head.appendChild(cursorStyle);
 
@@ -190,6 +189,6 @@ export default <RoomPlugin<CursorPeerExtension, CursorRoomExtension>>{
         room.peers[peerId].cursorElement.remove();
     },
     cleanup(room) {
-        room.cursorPlugin.cursorContainer?.remove();
+        room.cursorPlugin.cursorContainer.remove();
     },
 };

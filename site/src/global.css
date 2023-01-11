@@ -5,3 +5,7 @@
     -webkit-user-drag: none;
     user-select: none;
 }
+
+body {
+    background-color: #222;
+}

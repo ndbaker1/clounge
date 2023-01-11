@@ -5,15 +5,18 @@ import infoWindowPlugin from "./infoWindow";
 
 export type ViewportAnchorRoomExtension = {
     viewportAnchorPlugin: {
-        elementRef?: HTMLElement;
+        elementRef: HTMLElement;
         position: Vector2D;
-        mousepressed: boolean;
-        oldPosition: Vector2D;
-        anchorCoordinateElement?: HTMLElement;
+        anchorCoordinateElement: HTMLElement;
         setPosition: (x: number, y: number) => void;
         move: (x: number, y: number) => void;
     }
 } & InfoWindowRoomExtension;
+
+const internalState = {
+    mousepressed: false,
+    oldPosition: { x: 0, y: 0 },
+};
 
 export default <RoomPlugin<object, ViewportAnchorRoomExtension>>{
     name: "viewportAnchor",
@@ -21,58 +24,51 @@ export default <RoomPlugin<object, ViewportAnchorRoomExtension>>{
     initialize(room) {
         const elementRef = document.createElement("div");
         elementRef.style.position = "fixed";
-        elementRef.style.zIndex = String(99999);
+        elementRef.style.zIndex = String(9999);
         document.body.appendChild(elementRef);
 
-        const anchorCoordinateElement = document.createElement("small");
-        if (!room.infoWindowPlugin.element) throw Error("infoWindowPlugin issue.");
+        const anchorCoordinateElement = document.createElement("p");
         room.infoWindowPlugin.element.appendChild(anchorCoordinateElement);
 
         room.viewportAnchorPlugin = {
             setPosition(x: number, y: number) {
                 this.position.x = x;
                 this.position.y = y;
-                if (this.elementRef) {
-                    this.elementRef.style.left = x + "px";
-                    this.elementRef.style.top = y + "px";
-                }
+                this.elementRef.style.left = x + "px";
+                this.elementRef.style.top = y + "px";
             },
             move(x: number, y: number) {
                 this.setPosition(this.position.x + x, this.position.y + y);
             },
-            mousepressed: false,
-            oldPosition: { x: 0, y: 0 },
             position: { x: 0, y: 0 },
             anchorCoordinateElement,
             elementRef,
         };
 
         window.addEventListener("mousedown", ({ button }) => {
-            if (button === 1) room.viewportAnchorPlugin.mousepressed = true;
+            if (button === 1) internalState.mousepressed = true;
         });
         window.addEventListener("mouseup", ({ button }) => {
-            if (button === 1) room.viewportAnchorPlugin.mousepressed = false;
+            if (button === 1) internalState.mousepressed = false;
         });
         window.addEventListener("mousemove", ({ clientX, clientY }) => {
-            if (room.viewportAnchorPlugin.mousepressed) {
+            if (internalState.mousepressed) {
                 const delta: Vector2D = {
-                    x: clientX - room.viewportAnchorPlugin.oldPosition.x,
-                    y: clientY - room.viewportAnchorPlugin.oldPosition.y,
+                    x: clientX - internalState.oldPosition.x,
+                    y: clientY - internalState.oldPosition.y,
                 };
 
                 room.viewportAnchorPlugin.move(delta.x, delta.y);
             }
 
-            room.viewportAnchorPlugin.oldPosition.x = clientX;
-            room.viewportAnchorPlugin.oldPosition.y = clientY;
+            internalState.oldPosition.x = clientX;
+            internalState.oldPosition.y = clientY;
 
-            if (room.viewportAnchorPlugin.anchorCoordinateElement) {
-                room.viewportAnchorPlugin.anchorCoordinateElement.textContent = `Viewport: (${-room.viewportAnchorPlugin.position.x}, ${-room.viewportAnchorPlugin.position.y})`;
-            }
+            room.viewportAnchorPlugin.anchorCoordinateElement.textContent = `Viewport: (${-room.viewportAnchorPlugin.position.x}, ${-room.viewportAnchorPlugin.position.y})`;
         });
     },
     cleanup(room) {
-        room.viewportAnchorPlugin.elementRef?.remove();
-        room.viewportAnchorPlugin.anchorCoordinateElement?.remove();
+        room.viewportAnchorPlugin.elementRef.remove();
+        room.viewportAnchorPlugin.anchorCoordinateElement.remove();
     },
 };

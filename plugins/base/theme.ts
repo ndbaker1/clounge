@@ -15,6 +15,7 @@ export default <RoomPlugin>{
         }
 
         button {
+          margin-bottom: 3px;
           border-width: 0;
           border-radius: 8px;
           box-shadow: black 1px 4px;
@@ -24,6 +25,7 @@ export default <RoomPlugin>{
           background-color: #805060;
         } button:active {
           margin-top: 3px;
+          margin-bottom: 0;
           box-shadow: black 1px 1px;
           background-color: #87556F;
         }

@@ -1,13 +1,14 @@
 import type { RoomPlugin } from "types";
-import infoWindow from "./src/infoWindow";
-import names from "./src/names";
-import objectLoader from "./src/objectLoader";
-import peerCursors from "./src/peerCursors";
-import peerRelaying from "./src/peerRelaying";
-import pluginManager from "./src/pluginManager";
-import roomSharing from "./src/roomSharing";
-import theme from "./src/theme";
-import viewportAnchor from "./src/viewportAnchor";
+import infoWindow from "./base/infoWindow";
+import names from "./base/names";
+import objectContextMenu from "./base/objectContextMenu";
+import objectLoader from "./base/objectLoader";
+import peerCursors from "./base/peerCursors";
+import peerRelaying from "./base/peerRelaying";
+import pluginManager from "./base/pluginManager";
+import roomSharing from "./base/roomSharing";
+import theme from "./base/theme";
+import viewportAnchor from "./base/viewportAnchor";
 
 export class PluginManager {
     /**
@@ -24,6 +25,7 @@ export class PluginManager {
         const plugins = [
             viewportAnchor,
             infoWindow,
+            objectContextMenu,
             names,
             objectLoader,
             peerCursors,
