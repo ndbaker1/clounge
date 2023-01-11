@@ -28,7 +28,7 @@ export default <RoomPlugin<object, ViewportAnchorRoomExtension>>{
         document.body.appendChild(elementRef);
 
         const anchorCoordinateElement = document.createElement("p");
-        room.infoWindowPlugin.element.appendChild(anchorCoordinateElement);
+        room.infoWindowPlugin.element.prepend(anchorCoordinateElement);
 
         room.viewportAnchorPlugin = {
             setPosition(x: number, y: number) {

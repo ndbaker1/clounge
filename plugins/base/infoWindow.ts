@@ -12,6 +12,7 @@ export default <RoomPlugin<object, InfoWindowRoomExtension>>{
         const infoWindow = document.createElement("div");
         infoWindow.style.zIndex = String(9999);
         infoWindow.style.position = "fixed";
+        infoWindow.style.opacity = "0.6";
         infoWindow.style.left = "0";
         infoWindow.style.bottom = "0";
         infoWindow.style.margin = "1rem";
@@ -20,6 +21,12 @@ export default <RoomPlugin<object, InfoWindowRoomExtension>>{
         infoWindow.style.flexDirection = "column";
 
         document.body.appendChild(infoWindow);
+
+        const repo = document.createElement("a");
+        repo.text = "Github Link 💻";
+        repo.target = "_blank noreferrer";
+        repo.href = "https://github.com/ndbaker1/clounge";
+        infoWindow.appendChild(repo);
 
         // ROOM DATA INITIALIZED
         room.infoWindowPlugin = { element: infoWindow };
