@@ -239,7 +239,21 @@ export default <RoomPlugin<ObjectLoaderPeerExtension, ObjectLoaderRoomExtension,
         uploadButton.onclick = async () => {
             try {
                 const loadRequest: Partial<ObjectDescriptor & { count: number }>[] = JSON.parse(
-                    prompt("enter json string of the type: Array<{ url: string, count: number }>") ?? "empty",
+                    prompt(`
+Hope you understand typescript notation.
+Please enter a json string of the type: 
+Array<{
+    id: number;
+    width?: number;
+    height?: number;
+    currentImg?: string;
+    frontImg: string;
+    backImg: string;
+    rotationDeg: number;
+    draggable?: boolean;
+    count?: number;
+}>
+                    `) ?? ""
                 );
 
                 loadRequest.forEach((spawn) => {
