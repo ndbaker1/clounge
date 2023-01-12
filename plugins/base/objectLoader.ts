@@ -8,15 +8,21 @@ import cursorPlugin from "./peerCursors";
 import viewportAnchorPlugin from "./viewportAnchor";
 import infoWindow from "./infoWindow";
 
-export type ObjectDescriptor = Vector2D & {
-    id: number;
-    width?: number;
-    height?: number;
-    currentImg?: string;
-    frontImg: string;
-    backImg: string;
-    rotationDeg: number;
-    draggable?: boolean;
+// Object Data should only ever be fields, no functions, classes,
+// or anything that is not obviously serializable.
+export type RoomObjectDescriptors<
+    Fields extends Record<string, string | number | boolean> = Record<never, never>
+> = {
+    descriptors: Fields & Vector2D & {
+        id: number;
+        width?: number;
+        height?: number;
+        currentImg?: string;
+        frontImg: string;
+        backImg: string;
+        rotationDeg: number;
+        draggable?: boolean;
+    }
 };
 
 export type ObjectMessage =
@@ -37,14 +43,14 @@ export type ObjectMessage =
     | {
         type: "object_flip";
         id: number;
+        side: "front" | "back";
     }
     | {
         type: "object_spawn";
-        objectData: ObjectDescriptor;
+        descriptors: RoomObjectDescriptors["descriptors"];
     };
 
-export type ObjectLoaderObjectExtension = {
-    objectData: ObjectDescriptor;
+export type ObjectLoaderObjectExtension = RoomObjectDescriptors & {
     element: HTMLImageElement;
 };
 export type ObjectLoaderPeerExtension = CursorPeerExtension;
@@ -55,11 +61,11 @@ export type ObjectLoaderRoomExtension = CursorRoomExtension & ViewportAnchorRoom
         selectedObjectId: number;
         previousPosition: Vector2D;
         updateId: (id: number) => void;
-        spawnObject: (objectData: Partial<ObjectDescriptor>) => ObjectLoaderObjectExtension;
+        spawnObject: (partialDescriptors: Partial<RoomObjectDescriptors["descriptors"]>) => ObjectLoaderObjectExtension;
         setObjectRotation: (id: number, rotation: number, isSelf: boolean) => void;
         setObjectPosition: (id: number, position: Vector2D, isSelf: boolean) => void;
         moveElementToFront: (id: number, isSelf: boolean) => void;
-        flipObject: (id: number, isSelf: boolean) => void;
+        flipObject: (id: number, side: "front" | "back", isSelf: boolean) => void;
     }
 };
 
@@ -69,8 +75,8 @@ export type ObjectLoaderRoomExtension = CursorRoomExtension & ViewportAnchorRoom
 export type OBJECT_ID_ATTRIBUTE = "object-id";
 
 const KEYMAPS = {
-    rotateRight: "d",
-    rotateLeft: "a",
+    rotateRight: "e",
+    rotateLeft: "q",
     flip: "w",
 };
 
@@ -88,9 +94,9 @@ export default <RoomPlugin<ObjectLoaderPeerExtension, ObjectLoaderRoomExtension,
         } else if (data?.type === "object_move_front") {
             room.objectLoaderPlugin.moveElementToFront(data.id, false);
         } else if (data?.type === "object_flip") {
-            room.objectLoaderPlugin.flipObject(data.id, false);
+            room.objectLoaderPlugin.flipObject(data.id, data.side, false);
         } else if (data?.type === "object_spawn") {
-            room.objectLoaderPlugin.spawnObject(data.objectData);
+            room.objectLoaderPlugin.spawnObject(data.descriptors);
         }
     },
     initialize(room) {
@@ -117,7 +123,7 @@ export default <RoomPlugin<ObjectLoaderPeerExtension, ObjectLoaderRoomExtension,
             objectContainer,
             updateId: (id) => room.objectLoaderPlugin.currentId = Math.max(id, room.objectLoaderPlugin.currentId),
             spawnObject: (spawn) => {
-                const objectData: ObjectDescriptor = {
+                const descriptors: RoomObjectDescriptors["descriptors"] = {
                     id: ++room.objectLoaderPlugin.currentId, // increment
                     x: 300,
                     y: 300,
@@ -132,35 +138,38 @@ export default <RoomPlugin<ObjectLoaderPeerExtension, ObjectLoaderRoomExtension,
                 };
 
                 const element = document.createElement("img");
-                element.setAttribute(<OBJECT_ID_ATTRIBUTE>"object-id", objectData.id.toString());
+                element.setAttribute(<OBJECT_ID_ATTRIBUTE>"object-id", descriptors.id.toString());
                 element.style.position = "absolute";
 
-                element.src = objectData.currentImg ?? (objectData.currentImg = objectData.frontImg);
-                element.style.rotate = objectData.rotationDeg + "deg";
+                element.src = descriptors.currentImg ?? (descriptors.currentImg = descriptors.frontImg);
+                element.style.rotate = descriptors.rotationDeg + "deg";
 
-                if (objectData.width != null) {
-                    element.width = objectData.width;
+                if (descriptors.width != null) {
+                    element.width = descriptors.width;
                 }
-                if (objectData.height != null) {
-                    element.height = objectData.height;
-                }
-                element.style.left = objectData.x + "px";
-                element.style.top = objectData.y + "px";
-
-                if (objectData.id in room.objects) {
-                    room.objects[objectData.id].element.remove();
+                if (descriptors.height != null) {
+                    element.height = descriptors.height;
                 }
 
-                room.objects[objectData.id] = { element, objectData };
+                element.style.left = descriptors.x + "px";
+                element.style.top = descriptors.y + "px";
 
+                if (descriptors.id in room.objects) {
+                    room.objects[descriptors.id].element?.remove();
+                }
+
+                // ordering here matters.
+                // the element field is optional because the object exists before the node
+                room.objects[descriptors.id] = { element, descriptors };
                 room.objectLoaderPlugin.objectContainer.appendChild(element);
 
-                room.objectLoaderPlugin.updateId(objectData.id);
+                room.objectLoaderPlugin.updateId(descriptors.id);
 
-                return room.objects[objectData.id];
+                return room.objects[descriptors.id];
             },
             setObjectRotation: (id, rotation, isSelf) => {
-                room.objects[id].objectData.rotationDeg = rotation;
+                if (room.objects[id].element == undefined) return;
+                room.objects[id].descriptors.rotationDeg = rotation;
                 room.objects[id].element.style.rotate = rotation + "deg";
 
                 if (isSelf) {
@@ -175,8 +184,8 @@ export default <RoomPlugin<ObjectLoaderPeerExtension, ObjectLoaderRoomExtension,
                 }
             },
             setObjectPosition: (id, position, isSelf) => {
-                room.objects[id].objectData.x = position.x;
-                room.objects[id].objectData.y = position.y;
+                room.objects[id].descriptors.x = position.x;
+                room.objects[id].descriptors.y = position.y;
                 room.objects[id].element.style.top = position.y + "px";
                 room.objects[id].element.style.left = position.x + "px";
 
@@ -206,18 +215,16 @@ export default <RoomPlugin<ObjectLoaderPeerExtension, ObjectLoaderRoomExtension,
                     }
                 }
             },
-            flipObject: (id, isSelf) => {
-                room.objects[id].objectData.currentImg =
-                    (room.objects[id].element.src == room.objects[id].objectData.frontImg)
-                        ? room.objects[id].objectData.backImg
-                        : room.objects[id].objectData.frontImg;
+            flipObject: (id, side, isSelf) => {
+                const newImage = side === "front"
+                    ? room.objects[id].descriptors.frontImg
+                    : room.objects[id].descriptors.backImg;
 
-                room.objects[id].element.src =
-                    room.objects[id].objectData.currentImg ??
-                    (room.objects[id].objectData.currentImg = room.objects[id].objectData.frontImg);
+                room.objects[id].descriptors.currentImg = newImage;
+                room.objects[id].element.src = newImage;
 
                 if (isSelf) {
-                    const message: ObjectMessage = { type: "object_flip", id };
+                    const message: ObjectMessage = { type: "object_flip", side, id };
 
                     for (const id in room.peers) {
                         room.peers[id].connection.send(message);
@@ -238,7 +245,7 @@ export default <RoomPlugin<ObjectLoaderPeerExtension, ObjectLoaderRoomExtension,
         uploadButton.style.padding = "0.5rem 0.8rem";
         uploadButton.onclick = async () => {
             try {
-                const loadRequest: Partial<ObjectDescriptor & { count: number }>[] = JSON.parse(
+                const loadRequest: Partial<RoomObjectDescriptors["descriptors"] & { count: number }>[] = JSON.parse(
                     prompt(`
 Hope you understand typescript notation.
 Please enter a json string of the type: 
@@ -258,11 +265,11 @@ Array<{
 
                 loadRequest.forEach((spawn) => {
                     for (let i = 0; i < (spawn.count ?? 1); i++) {
-                        const { objectData } = room.objectLoaderPlugin.spawnObject(spawn);
+                        const { descriptors: objectData } = room.objectLoaderPlugin.spawnObject(spawn);
 
                         const message: ObjectMessage = {
                             type: "object_spawn",
-                            objectData,
+                            descriptors: objectData,
                         };
 
                         for (const id in room.peers) {
@@ -283,10 +290,12 @@ Array<{
             // button == 0 means left click
             if (button === 0) {
                 const hoveredElement = document.elementFromPoint(room.self.cursor.x, room.self.cursor.y) as HTMLElement | null;
-                const elementId = parseInt(hoveredElement?.getAttribute(<OBJECT_ID_ATTRIBUTE>"object-id") ?? "");
-
-                room.objectLoaderPlugin.moveElementToFront(elementId, true);
-                room.objectLoaderPlugin.selectedObjectId = elementId;
+                const elementIdString = hoveredElement?.getAttribute(<OBJECT_ID_ATTRIBUTE>"object-id");
+                if (elementIdString != null) {
+                    const elementId = parseInt(elementIdString);
+                    room.objectLoaderPlugin.moveElementToFront(elementId, true);
+                    room.objectLoaderPlugin.selectedObjectId = elementId;
+                }
             }
         });
 
@@ -302,20 +311,23 @@ Array<{
                 if (key == KEYMAPS.rotateLeft) {
                     room.objectLoaderPlugin.setObjectRotation(
                         room.objectLoaderPlugin.selectedObjectId,
-                        (roomObject.objectData.rotationDeg - 90) % 360,
+                        (roomObject.descriptors.rotationDeg - 90) % 360,
                         true,
                     );
                 }
                 if (key == KEYMAPS.rotateRight) {
                     room.objectLoaderPlugin.setObjectRotation(
                         room.objectLoaderPlugin.selectedObjectId,
-                        (roomObject.objectData.rotationDeg + 90) % 360,
+                        (roomObject.descriptors.rotationDeg + 90) % 360,
                         true,
                     );
                 }
                 if (key == KEYMAPS.flip) {
                     room.objectLoaderPlugin.flipObject(
                         room.objectLoaderPlugin.selectedObjectId,
+                        roomObject.descriptors.currentImg === roomObject.descriptors.frontImg
+                            ? "back"
+                            : "front",
                         true,
                     );
                 }
@@ -325,7 +337,7 @@ Array<{
         window.addEventListener("mousemove", () => {
             if (
                 room.objectLoaderPlugin.selectedObjectId > 0 &&
-                room.objects[room.objectLoaderPlugin.selectedObjectId].objectData.draggable === true
+                room.objects[room.objectLoaderPlugin.selectedObjectId].descriptors.draggable === true
             ) {
                 const delta: Vector2D = {
                     x: room.self.cursor.x - room.objectLoaderPlugin.previousPosition.x,
@@ -335,8 +347,8 @@ Array<{
                 room.objectLoaderPlugin.setObjectPosition(
                     room.objectLoaderPlugin.selectedObjectId,
                     {
-                        x: room.objects[room.objectLoaderPlugin.selectedObjectId].objectData.x + delta.x,
-                        y: room.objects[room.objectLoaderPlugin.selectedObjectId].objectData.y + delta.y,
+                        x: room.objects[room.objectLoaderPlugin.selectedObjectId].descriptors.x + delta.x,
+                        y: room.objects[room.objectLoaderPlugin.selectedObjectId].descriptors.y + delta.y,
                     },
                     true,
                 );
@@ -354,7 +366,7 @@ Array<{
             if (elementId != null) {
                 const message: ObjectMessage = {
                     type: "object_spawn",
-                    objectData: room.objects[parseInt(elementId)].objectData,
+                    descriptors: room.objects[parseInt(elementId)].descriptors,
                 };
                 room.peers[peerId].connection.send(message);
             }
