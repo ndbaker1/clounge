@@ -31,26 +31,28 @@ export default <RoomPlugin<
                 }
             };
 
-            window.addEventListener("mouseup", () => {
-                const hoveredElements = document
-                    .elementsFromPoint(room.self.cursorScreen.x, room.self.cursorScreen.y)
-                    .filter(ele => ele.hasAttribute(<OBJECT_ID_ATTRIBUTE>"object-id"));
+            window.addEventListener("mouseup", ({ button }) => {
+                if (button === 0) { // left button up after drag
+                    const hoveredElements = document
+                        .elementsFromPoint(room.self.cursorScreen.x, room.self.cursorScreen.y)
+                        .filter(ele => ele.hasAttribute(<OBJECT_ID_ATTRIBUTE>"object-id"));
 
-                const [top, stack] = [hoveredElements.shift(), hoveredElements.shift()];
+                    const [top, stack] = [hoveredElements.shift(), hoveredElements.shift()];
 
-                const stackIdString = stack?.getAttribute(<OBJECT_ID_ATTRIBUTE>"object-id");
-                const topIdString = top?.getAttribute(<OBJECT_ID_ATTRIBUTE>"object-id");
-                if (stackIdString != null && topIdString != null) {
-                    const topId = parseInt(topIdString);
-                    const topRoomObjectDescriptors = room.objects[topId].descriptors;
-                    if (topRoomObjectDescriptors.snap != null && topRoomObjectDescriptors.snap) {
-                        const stackId = parseInt(stackIdString);
+                    const stackIdString = stack?.getAttribute(<OBJECT_ID_ATTRIBUTE>"object-id");
+                    const topIdString = top?.getAttribute(<OBJECT_ID_ATTRIBUTE>"object-id");
+                    if (stackIdString != null && topIdString != null) {
+                        const topId = parseInt(topIdString);
+                        const topRoomObjectDescriptors = room.objects[topId].descriptors;
+                        if (topRoomObjectDescriptors.snap != null && topRoomObjectDescriptors.snap) {
+                            const stackId = parseInt(stackIdString);
 
-                        room.objectPropertiesPlugin.setObjectPosition(
-                            topId,
-                            room.objects[stackId].descriptors,
-                            true,
-                        );
+                            room.objectPropertiesPlugin.setObjectPosition(
+                                topId,
+                                room.objects[stackId].descriptors,
+                                true,
+                            );
+                        }
                     }
                 }
             });
