@@ -7,7 +7,6 @@ export type ViewportAnchorRoomExtension = {
     viewportAnchorPlugin: {
         elementRef: HTMLElement;
         position: Vector2D;
-        anchorCoordinateElement: HTMLElement;
         setPosition: (x: number, y: number) => void;
         move: (x: number, y: number) => void;
     }
@@ -18,6 +17,8 @@ const internalState = {
     oldPosition: { x: 0, y: 0 },
 };
 
+let anchorCoordinateElement: HTMLElement;
+
 export default <RoomPlugin<object, ViewportAnchorRoomExtension>>{
     name: "viewportAnchor",
     dependencies: [infoWindowPlugin.name],
@@ -27,7 +28,7 @@ export default <RoomPlugin<object, ViewportAnchorRoomExtension>>{
         elementRef.style.zIndex = String(9999);
         document.body.appendChild(elementRef);
 
-        const anchorCoordinateElement = document.createElement("p");
+        anchorCoordinateElement = document.createElement("p");
         room.infoWindowPlugin.element.prepend(anchorCoordinateElement);
 
         room.viewportAnchorPlugin = {
@@ -41,7 +42,6 @@ export default <RoomPlugin<object, ViewportAnchorRoomExtension>>{
                 this.setPosition(this.position.x + x, this.position.y + y);
             },
             position: { x: 0, y: 0 },
-            anchorCoordinateElement,
             elementRef,
         };
 
@@ -64,11 +64,11 @@ export default <RoomPlugin<object, ViewportAnchorRoomExtension>>{
             internalState.oldPosition.x = clientX;
             internalState.oldPosition.y = clientY;
 
-            room.viewportAnchorPlugin.anchorCoordinateElement.textContent = `Viewport: (${-room.viewportAnchorPlugin.position.x}, ${-room.viewportAnchorPlugin.position.y})`;
+            anchorCoordinateElement.textContent = `Viewport: (${-room.viewportAnchorPlugin.position.x}, ${-room.viewportAnchorPlugin.position.y})`;
         });
     },
     cleanup(room) {
         room.viewportAnchorPlugin.elementRef.remove();
-        room.viewportAnchorPlugin.anchorCoordinateElement.remove();
+        anchorCoordinateElement.remove();
     },
 };

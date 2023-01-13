@@ -10,6 +10,7 @@ import point from "../assets/point.png";
 
 import namePlugin from "./names";
 import viewportAnchorPlugin from "./viewportAnchor";
+import infoWindow from "./infoWindow";
 
 export type CursorData = Vector2D & {
     pressed: boolean;
@@ -43,9 +44,11 @@ export type CursorRoomExtension = {
     };
 } & ViewportAnchorRoomExtension;
 
+let mouseCoordinateElement: HTMLElement;
+
 export default <RoomPlugin<CursorPeerExtension, CursorRoomExtension>>{
     name: "peerCursors",
-    dependencies: [viewportAnchorPlugin.name, namePlugin.name],
+    dependencies: [viewportAnchorPlugin.name, namePlugin.name, infoWindow.name],
     processMessage(room, data: MouseMessage | SyncMessage, peerId) {
         if (data?.type === "identification") {
             room.peers[peerId].nameElement.innerHTML = data.name;
@@ -61,6 +64,9 @@ export default <RoomPlugin<CursorPeerExtension, CursorRoomExtension>>{
         cursorContainer.style.position = "relative";
         cursorContainer.style.zIndex = String(9999);
         room.viewportAnchorPlugin.elementRef.appendChild(cursorContainer);
+
+        mouseCoordinateElement = document.createElement("p");
+        room.infoWindowPlugin.element.prepend(mouseCoordinateElement);
 
         // ROOM DATA INITIALIZED
         room.cursorPlugin = {
@@ -142,8 +148,9 @@ export default <RoomPlugin<CursorPeerExtension, CursorRoomExtension>>{
             for (const id in room.peers) {
                 room.peers[id].connection.send(message);
             }
+            mouseCoordinateElement.textContent = `Mouse Coords: (${message.position.x}, ${message.position.y})`;
 
-            room.cursorPlugin.moveCursor({ x: clientX, y: clientY }, room.self.id, true);
+            room.cursorPlugin.moveCursor(room.self.cursor, room.self.id, true);
         });
 
         window.addEventListener("mousedown", () => {
@@ -190,5 +197,6 @@ export default <RoomPlugin<CursorPeerExtension, CursorRoomExtension>>{
     },
     cleanup(room) {
         room.cursorPlugin.cursorContainer.remove();
+        mouseCoordinateElement?.remove();
     },
 };
