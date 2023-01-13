@@ -3,7 +3,9 @@ import infoWindow from "./base/infoWindow";
 import names from "./base/names";
 import objectContextMenu from "./base/objectContextMenu";
 import objectLoader from "./base/objectLoader";
-import objectStacking from "./base/objectStacking";
+import objectPreview from "./base/objectPreview";
+import objectProperties from "./base/objectProperties";
+import objectSnapping from "./base/objectSnapping";
 import peerCursors from "./base/peerCursors";
 import peerRelaying from "./base/peerRelaying";
 import pluginManager from "./base/pluginManager";
@@ -28,9 +30,11 @@ export class PluginManager {
             infoWindow,
             objectContextMenu,
             names,
-            objectLoader,
             peerCursors,
-            objectStacking,
+            objectProperties,
+            objectLoader,
+            objectPreview,
+            objectSnapping,
             peerRelaying,
             pluginManager,
             roomSharing,

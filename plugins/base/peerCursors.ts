@@ -12,10 +12,6 @@ import namePlugin from "./names";
 import viewportAnchorPlugin from "./viewportAnchor";
 import infoWindow from "./infoWindow";
 
-export type CursorData = Vector2D & {
-    pressed: boolean;
-};
-
 export type MouseMessage =
     | {
         type: "mouse_position";
@@ -33,14 +29,22 @@ type CursorElements = {
 };
 
 export type CursorPeerExtension = CursorElements & {
-    cursor: CursorData;
+    /**
+     * The Cursor Position relaive to the window.
+     */
+    cursorScreen: Vector2D;
+    /**
+     * The Cursor Position relative to the (infinite) board space.
+     */
+    cursorWorld: Vector2D;
+    mousePressed: boolean;
 } & NamePeerExtension;
 
 export type CursorRoomExtension = {
     cursorPlugin: {
         cursorContainer: HTMLElement;
         createCursor: () => CursorElements;
-        moveCursor: (pos: Vector2D, id: PeerID, isSelf?: boolean) => void;
+        moveCursor: (pos: Vector2D, id: PeerID) => void;
     };
 } & ViewportAnchorRoomExtension;
 
@@ -55,7 +59,7 @@ export default <RoomPlugin<CursorPeerExtension, CursorRoomExtension>>{
         } else if (data?.type === "mouse_position") {
             room.cursorPlugin.moveCursor(data.position, peerId);
         } else if (data?.type === "mouse_press") {
-            room.peers[peerId].cursor.pressed = data.pressed;
+            room.peers[peerId].mousePressed = data.pressed;
             room.peers[peerId].cursorImage.src = data.pressed ? drag : point;
         }
     },
@@ -92,19 +96,36 @@ export default <RoomPlugin<CursorPeerExtension, CursorRoomExtension>>{
                     nameElement,
                 };
             },
-            moveCursor: ({ x, y }: Vector2D, id: string, isSelf = false) => {
+            moveCursor: ({ x, y }, id) => {
+                const isSelf = room.self.id === id;
                 const ref = isSelf ? room.self : room.peers[id];
 
-                ref.cursor.x = x;
-                ref.cursor.y = y;
+                ref.cursorWorld = {
+                    x: x - (isSelf ? room.viewportAnchorPlugin.position.x : 0),
+                    y: y - (isSelf ? room.viewportAnchorPlugin.position.y : 0),
+                };
+                if (isSelf) {
+                    ref.cursorScreen = { x, y };
+                }
 
-                const anchorRef = room.viewportAnchorPlugin.elementRef;
-                ref.cursorElement.style.left = ref.cursor.x + (isSelf ? -anchorRef.offsetLeft : 0) + "px";
-                ref.cursorElement.style.top = ref.cursor.y + (isSelf ? -anchorRef.offsetTop : 0) + "px";
+                ref.cursorElement.style.left = ref.cursorWorld.x + "px";
+                ref.cursorElement.style.top = ref.cursorWorld.y + "px";
+
+                if (isSelf) {
+                    const message: MouseMessage = {
+                        type: "mouse_position",
+                        position: room.self.cursorWorld,
+                    };
+                    for (const id in room.peers) {
+                        room.peers[id].connection.send(message);
+                    }
+                }
             },
         };
 
-        room.self.cursor = { x: 0, y: 0, pressed: false };
+        room.self.cursorWorld = { x: 0, y: 0 };
+        room.self.cursorScreen = { x: 0, y: 0 };
+        room.self.mousePressed = false;
 
         const cursorData = room.cursorPlugin.createCursor();
         cursorData.nameElement.innerHTML = "me";
@@ -135,22 +156,8 @@ export default <RoomPlugin<CursorPeerExtension, CursorRoomExtension>>{
         document.head.appendChild(cursorStyle);
 
         window.addEventListener("mousemove", ({ clientX, clientY }) => {
-            room.self.cursor.x = clientX;
-            room.self.cursor.y = clientY;
-
-            const message: MouseMessage = {
-                type: "mouse_position",
-                position: {
-                    x: room.self.cursor.x - room.viewportAnchorPlugin.position.x,
-                    y: room.self.cursor.y - room.viewportAnchorPlugin.position.y,
-                },
-            };
-            for (const id in room.peers) {
-                room.peers[id].connection.send(message);
-            }
-            mouseCoordinateElement.textContent = `Mouse Coords: (${message.position.x}, ${message.position.y})`;
-
-            room.cursorPlugin.moveCursor(room.self.cursor, room.self.id, true);
+            room.cursorPlugin.moveCursor({ x: clientX, y: clientY }, room.self.id);
+            mouseCoordinateElement.textContent = `Mouse Coords: (${room.self.cursorWorld.x}, ${room.self.cursorWorld.y})`;
         });
 
         window.addEventListener("mousedown", () => {
@@ -178,19 +185,13 @@ export default <RoomPlugin<CursorPeerExtension, CursorRoomExtension>>{
         });
     },
     peerSetup(room, peerId) {
-        room.peers[peerId].cursor = { x: 0, y: 0, pressed: false };
+        room.peers[peerId].cursorWorld = { x: 0, y: 0 };
+        room.peers[peerId].mousePressed = false;
 
         const cursorData = room.cursorPlugin.createCursor();
         room.peers[peerId] = { ...room.peers[peerId], ...cursorData };
 
-        const message: MouseMessage = {
-            type: "mouse_position",
-            position: {
-                x: room.self.cursor.x - room.viewportAnchorPlugin.position.x,
-                y: room.self.cursor.y - room.viewportAnchorPlugin.position.y,
-            },
-        };
-        room.peers[peerId].connection.send(message);
+        room.cursorPlugin.moveCursor(room.self.cursorScreen, room.self.id);
     },
     handlePeerDisconnect(room, peerId) {
         room.peers[peerId].cursorElement.remove();

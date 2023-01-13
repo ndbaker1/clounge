@@ -17,8 +17,7 @@ export default <RoomPlugin<object, InfoWindowRoomExtension>>{
         infoWindow.style.bottom = "0";
         infoWindow.style.margin = "1rem";
         infoWindow.style.fontSize = "0.8rem";
-        infoWindow.style.display = "flex";
-        infoWindow.style.flexDirection = "column";
+        infoWindow.style.display = "grid";
 
         document.body.appendChild(infoWindow);
 
