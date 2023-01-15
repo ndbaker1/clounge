@@ -1,15 +1,11 @@
 import type { RoomPlugin } from "types";
-import type { ObjectDescriptors, ObjectPropertiesObjectExtension, ObjectPropertiesRoomExtension } from "./objectProperties";
+import type { ObjectPropertiesObjectExtension, ObjectPropertiesRoomExtension } from "./objectProperties";
 import type { ObjectContextMenuRoomExtension } from "./objectContextMenu";
 
 import peerCursors from "./peerCursors";
 import objectProperties from "./objectProperties";
 import objectContextMenu from "./objectContextMenu";
 import type { ViewportAnchorRoomExtension } from "./viewportAnchor";
-
-export type ObjectSnappingObjectExtension = ObjectDescriptors<{
-    snap?: boolean,
-}>;
 
 export default <RoomPlugin<
     object,
