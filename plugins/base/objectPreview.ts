@@ -16,7 +16,7 @@ export default <RoomPlugin<
         name: "objectPreview",
         dependencies: [objectProperties.name, objectContextMenu.name, viewportAnchor.name],
         initialize(room) {
-            room.objectContextMenuPlugin.optionHandlers["preview cards 👀"] = (ids) => {
+            room.objectContextMenuPlugin.menuOptions.set("preview cards 👀", (ids) => {
                 function closeWindow() {
                     previewContainer.remove();
                     window.removeEventListener("mouseup", closeWindow);
@@ -75,9 +75,9 @@ export default <RoomPlugin<
                 });
 
                 room.viewportAnchorPlugin.elementRef.appendChild(previewContainer);
-            };
+            });
         },
         cleanup(room) {
-            delete room.objectContextMenuPlugin.optionHandlers["preview cards 👀"];
+            room.objectContextMenuPlugin.menuOptions.delete("preview cards 👀");
         },
     };

@@ -20,16 +20,18 @@ export default <RoomPlugin<
         name: "objectSnapping",
         dependencies: [peerCursors.name, objectProperties.name, objectContextMenu.name],
         initialize(room) {
-            room.objectContextMenuPlugin.optionHandlers["snapping on"] = (ids) => {
-                for (const id of ids) {
-                    room.objects[id].descriptors.snap = true;
-                }
-            };
-            room.objectContextMenuPlugin.optionHandlers["snapping off"] = (ids) => {
-                for (const id of ids) {
-                    room.objects[id].descriptors.snap = false;
-                }
-            };
+            room.objectContextMenuPlugin.menuOptions.set("snapping", new Map(Object.entries({
+                "snapping on": (ids) => {
+                    for (const id of ids) {
+                        room.objects[id].descriptors.snap = true;
+                    }
+                },
+                "snapping off": (ids) => {
+                    for (const id of ids) {
+                        room.objects[id].descriptors.snap = false;
+                    }
+                },
+            })));
 
             window.addEventListener("mouseup", ({ button }) => {
                 if (button === 0) { // left button up after drag
@@ -56,5 +58,8 @@ export default <RoomPlugin<
                     }
                 }
             });
+        },
+        cleanup(room) {
+            room.objectContextMenuPlugin.menuOptions.delete("snapping");
         },
     };

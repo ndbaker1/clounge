@@ -275,7 +275,7 @@ export default <RoomPlugin<ObjectPropertiesPeerExtension, ObjectPropertiesRoomEx
     },
     peerSetup(room, peerId) {
         // trick to send updates in order by how hey appear in the DOM
-        for (const element of document.querySelectorAll("[object-id]")) {
+        for (const element of document.querySelectorAll("[" + <OBJECT_ID_ATTRIBUTE>"object-id" + "]")) {
             const elementId = element.getAttribute(<OBJECT_ID_ATTRIBUTE>"object-id");
             if (elementId != null) {
                 const message: ObjectMessage = {

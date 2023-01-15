@@ -4,7 +4,7 @@ export type InfoWindowRoomExtension = {
     infoWindowPlugin: {
         element: HTMLDivElement;
     }
-}
+};
 
 export default <RoomPlugin<object, InfoWindowRoomExtension>>{
     name: "infoWindow",
