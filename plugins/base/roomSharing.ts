@@ -1,9 +1,11 @@
 import type { RoomPlugin } from "types";
 
+let roomLinkContainer: HTMLElement;
+
 export default <RoomPlugin>{
     name: "roomSharing",
     initialize(room) {
-        const roomLinkContainer = document.createElement("div");
+        roomLinkContainer = document.createElement("div");
         roomLinkContainer.style.position = "fixed";
         roomLinkContainer.style.top = "0";
         roomLinkContainer.style.right = "0";
@@ -25,5 +27,8 @@ export default <RoomPlugin>{
 
         roomLinkContainer.appendChild(roomLink);
         document.body.appendChild(roomLinkContainer);
+    },
+    cleanup() {
+        roomLinkContainer.remove();
     },
 };

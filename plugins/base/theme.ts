@@ -2,15 +2,19 @@ import type { RoomPlugin } from "types";
 
 // https://colorhunt.co/palette/4b5d67322f3d59405c87556f
 
+let styleElement: HTMLStyleElement;
+
 export default <RoomPlugin>{
     name: "theme",
     initialize() {
-        document.body.style.backgroundColor = "#322F3D";
-        document.body.style.color = "white";
-
-        const styleElement = document.createElement("style");
+        styleElement = document.createElement("style");
         styleElement.innerHTML = `
         * {
+          color: white;
+        }
+
+        body {
+          background-color: #322F3D;
           color: white;
         }
 
@@ -39,5 +43,8 @@ export default <RoomPlugin>{
       `;
 
         document.head.appendChild(styleElement);
+    },
+    cleanup() {
+        styleElement.remove();
     },
 };

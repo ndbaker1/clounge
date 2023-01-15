@@ -1,9 +1,8 @@
-import type { RoomPlugin } from "types";
+import type { Message, RoomPlugin } from "types";
 
-export type SyncMessage = {
-    type: "identification";
+export type SyncMessage = Message<"identification", {
     name: string;
-};
+}>;
 
 export type NamePeerExtension = { name: string };
 
@@ -17,11 +16,10 @@ export default <RoomPlugin<NamePeerExtension>>{
         }
     },
     peerSetup(room, peerId) {
-        const message: SyncMessage = {
+        room.peers[peerId].connection.send<SyncMessage>({
             type: "identification",
             name: room.self.name,
-        };
-        room.peers[peerId].connection.send(message);
+        });
     },
     initialize(room) {
         const nameContainer = document.createElement("div");
@@ -40,8 +38,9 @@ export default <RoomPlugin<NamePeerExtension>>{
                 type: "identification",
                 name: nameField.value,
             };
+
             for (const peer in room.peers) {
-                room.peers[peer].connection.send(message);
+                room.peers[peer].connection.send<SyncMessage>(message);
             }
         };
         nameContainer.appendChild(nameField);

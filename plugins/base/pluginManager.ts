@@ -2,13 +2,15 @@ import type { RoomPlugin } from "types";
 
 const PLUGINS_KEY = "pluginUrls";
 
+let editorWindow: HTMLElement;
+
 export default <RoomPlugin>{
     name: "pluginManager",
     initialize() {
         if (typeof window !== "undefined") {
             const marginOffset = "-50%";
 
-            const editorWindow = document.createElement("div");
+            editorWindow = document.createElement("div");
             editorWindow.style.position = "fixed";
             editorWindow.style.margin = editorWindow.style.bottom = editorWindow.style.left = "0";
             editorWindow.style.width = "100vw";
@@ -41,5 +43,8 @@ export default <RoomPlugin>{
                     });
                 });
         }
+    },
+    cleanup() {
+        editorWindow.remove();
     },
 };

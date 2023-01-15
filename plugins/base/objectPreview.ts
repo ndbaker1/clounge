@@ -3,7 +3,6 @@ import type { ObjectPropertiesObjectExtension, ObjectPropertiesRoomExtension } f
 import type { ObjectContextMenuRoomExtension } from "./objectContextMenu";
 import type { ViewportAnchorRoomExtension } from "./viewportAnchor";
 
-import peerCursors from "./peerCursors";
 import objectProperties from "./objectProperties";
 import objectContextMenu from "./objectContextMenu";
 import viewportAnchor from "./viewportAnchor";
@@ -15,7 +14,7 @@ export default <RoomPlugin<
 >
     >{
         name: "objectPreview",
-        dependencies: [peerCursors.name, objectProperties.name, objectContextMenu.name, viewportAnchor.name],
+        dependencies: [objectProperties.name, objectContextMenu.name, viewportAnchor.name],
         initialize(room) {
             room.objectContextMenuPlugin.optionHandlers["preview cards 👀"] = (ids) => {
                 function closeWindow() {

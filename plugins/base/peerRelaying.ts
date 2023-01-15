@@ -1,14 +1,13 @@
-import type { PeerID, RoomPlugin } from "types";
+import type { Message, PeerID, RoomPlugin } from "types";
 
-type PeerRelayMessage = {
-    type: "peer relay message";
+type PeerRelayMessage = Message<"peer_relay_message", {
     peerId: PeerID;
-};
+}>;
 
 export default <RoomPlugin>{
     name: "peerRelaying",
     processMessage(room, data: PeerRelayMessage) {
-        if (data?.type === "peer relay message") {
+        if (data?.type === "peer_relay_message") {
             if (!(data.peerId in room.peers)) {
                 room.self.connect(data.peerId);
             }
@@ -16,11 +15,10 @@ export default <RoomPlugin>{
     },
     peerSetup(room, peerId) {
         for (const otherId in room.peers) {
-            const message: PeerRelayMessage = {
+            room.peers[peerId].connection.send<PeerRelayMessage>({
+                type: "peer_relay_message",
                 peerId: otherId,
-                type: "peer relay message",
-            };
-            room.peers[peerId].connection.send(message);
+            });
         }
     },
 };

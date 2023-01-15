@@ -1,4 +1,4 @@
-import type { RoomPlugin, Vector2D } from "types";
+import type { Message, RoomPlugin, Vector2D } from "types";
 
 import type { CursorPeerExtension, CursorRoomExtension } from "./peerCursors";
 import type { ViewportAnchorRoomExtension } from "./viewportAnchor";
@@ -25,33 +25,27 @@ export type ObjectDescriptors<
 };
 
 export type ObjectMessage =
-    | {
-        type: "object_position";
+    | Message<"object_position", {
         id: number;
         position: Vector2D;
-    }
-    | {
-        type: "object_rotation";
+    }>
+    | Message<"object_rotation", {
         id: number;
         rotation: number;
-    }
-    | {
-        type: "object_move_front";
+    }>
+    | Message<"object_move_front", {
         id: number;
-    }
-    | {
-        type: "object_flip";
+    }>
+    | Message<"object_flip", {
         id: number;
         side: "front" | "back";
-    }
-    | {
-        type: "object_spawn";
+    }>
+    | Message<"object_spawn", {
         descriptors: ObjectDescriptors["descriptors"];
-    }
-    | {
-        type: "delete_object";
+    }>
+    | Message<"delete_object", {
         id: number;
-    };
+    }>;
 
 export type ObjectPropertiesObjectExtension = ObjectDescriptors & {
     element: HTMLImageElement;
@@ -169,7 +163,7 @@ export default <RoomPlugin<ObjectPropertiesPeerExtension, ObjectPropertiesRoomEx
                     };
 
                     for (const id in room.peers) {
-                        room.peers[id].connection.send(message);
+                        room.peers[id].connection.send<ObjectMessage>(message);
                     }
                 }
             },
@@ -186,7 +180,7 @@ export default <RoomPlugin<ObjectPropertiesPeerExtension, ObjectPropertiesRoomEx
                     };
 
                     for (const id in room.peers) {
-                        room.peers[id].connection.send(message);
+                        room.peers[id].connection.send<ObjectMessage>(message);
                     }
                 }
             },
@@ -201,7 +195,7 @@ export default <RoomPlugin<ObjectPropertiesPeerExtension, ObjectPropertiesRoomEx
                     const message: ObjectMessage = { type: "object_move_front", id };
 
                     for (const id in room.peers) {
-                        room.peers[id].connection.send(message);
+                        room.peers[id].connection.send<ObjectMessage>(message);
                     }
                 }
             },
@@ -217,7 +211,7 @@ export default <RoomPlugin<ObjectPropertiesPeerExtension, ObjectPropertiesRoomEx
                     const message: ObjectMessage = { type: "object_flip", side, id };
 
                     for (const id in room.peers) {
-                        room.peers[id].connection.send(message);
+                        room.peers[id].connection.send<ObjectMessage>(message);
                     }
                 }
             },
@@ -229,7 +223,7 @@ export default <RoomPlugin<ObjectPropertiesPeerExtension, ObjectPropertiesRoomEx
                     const message: ObjectMessage = { type: "delete_object", id };
 
                     for (const id in room.peers) {
-                        room.peers[id].connection.send(message);
+                        room.peers[id].connection.send<ObjectMessage>(message);
                     }
                 }
             },
@@ -288,7 +282,7 @@ export default <RoomPlugin<ObjectPropertiesPeerExtension, ObjectPropertiesRoomEx
                     type: "object_spawn",
                     descriptors: room.objects[parseInt(elementId)].descriptors,
                 };
-                room.peers[peerId].connection.send(message);
+                room.peers[peerId].connection.send<ObjectMessage>(message);
             }
         }
     },

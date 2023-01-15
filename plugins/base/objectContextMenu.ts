@@ -18,9 +18,6 @@ export type ObjectContextMenuRoomExtension<H extends string = string> = {
 export default <RoomPlugin<CursorPeerExtension, ObjectContextMenuRoomExtension & ViewportAnchorRoomExtension & ObjectPropertiesRoomExtension, ObjectPropertiesObjectExtension>>{
     name: "objectContextMenu",
     dependencies: [viewportAnchor.name],
-    cleanup(room) {
-        room.objectContextMenuPlugin.menu.remove();
-    },
     initialize(room) {
         const menu = document.createElement("div");
         menu.style.zIndex = String(999);
@@ -130,5 +127,8 @@ export default <RoomPlugin<CursorPeerExtension, ObjectContextMenuRoomExtension &
                 });
             }
         });
+    },
+    cleanup(room) {
+        room.objectContextMenuPlugin.menu.remove();
     },
 };

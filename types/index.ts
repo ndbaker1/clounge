@@ -11,7 +11,7 @@ export type Vector2D = {
  */
 type ConnectedPeer = {
 	connection: {
-		send: (data: unknown) => void;
+		send: <T>(data: T) => void;
 		close: () => void;
 	};
 };
@@ -22,6 +22,13 @@ type ConnectedPeer = {
 type ConnectedSelf = {
 	id: PeerID;
 	connect: (peerId: PeerID) => void;
+};
+
+/**
+ * Message Template for items on the Data Channel
+ */
+export type Message<T extends string, D> = D & {
+	type: T;
 };
 
 /**
@@ -58,6 +65,7 @@ export type RoomPlugin<
 	PeerExtension = object,
 	RoomExtension = object,
 	ObjectExtension = object,
+	MessageType = never,
 > = {
 	/**
 	 * Name used to identify the plugin
@@ -88,9 +96,9 @@ export type RoomPlugin<
 	 * @param data peer message
 	 * @param peerId ID of the peer which the data comes from
 	 */
-	processMessage?<T = object>(
+	processMessage?(
 		room: RoomData<PeerExtension, RoomExtension, ObjectExtension>,
-		data: T,
+		data: MessageType,
 		peerId: PeerID,
 	): void;
 	/**

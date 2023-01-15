@@ -1,4 +1,4 @@
-import type { PeerID, RoomPlugin, Vector2D } from "types";
+import type { Message, PeerID, RoomPlugin, Vector2D } from "types";
 
 import type { SyncMessage, NamePeerExtension } from "./names";
 import type { ViewportAnchorRoomExtension } from "./viewportAnchor";
@@ -13,14 +13,12 @@ import viewportAnchorPlugin from "./viewportAnchor";
 import infoWindow from "./infoWindow";
 
 export type MouseMessage =
-    | {
-        type: "mouse_position";
+    | Message<"mouse_position", {
         position: Vector2D;
-    }
-    | {
-        type: "mouse_press";
+    }>
+    | Message<"mouse_press", {
         pressed: boolean;
-    };
+    }>;
 
 type CursorElements = {
     cursorElement: HTMLElement;
@@ -167,8 +165,9 @@ export default <RoomPlugin<CursorPeerExtension, CursorRoomExtension>>{
                 type: "mouse_press",
                 pressed: true,
             };
+
             for (const id in room.peers) {
-                room.peers[id].connection.send(message);
+                room.peers[id].connection.send<MouseMessage>(message);
             }
         });
 
@@ -179,8 +178,9 @@ export default <RoomPlugin<CursorPeerExtension, CursorRoomExtension>>{
                 type: "mouse_press",
                 pressed: false,
             };
+
             for (const id in room.peers) {
-                room.peers[id].connection.send(message);
+                room.peers[id].connection.send<MouseMessage>(message);
             }
         });
     },

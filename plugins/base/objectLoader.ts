@@ -9,9 +9,6 @@ let actionContainer: HTMLElement;
 export default <RoomPlugin<object, ObjectPropertiesRoomExtension>>{
     name: "objectLoader",
     dependencies: [objectProperties.name],
-    cleanup() {
-        actionContainer.remove();
-    },
     initialize(room) {
         // button that allows you to bulk load using a formatted json
         actionContainer = document.createElement("div");
@@ -78,5 +75,8 @@ Array<{
         actionContainer.appendChild(uploadButton);
         actionContainer.appendChild(deleteButton);
         document.body.appendChild(actionContainer);
+    },
+    cleanup() {
+        actionContainer.remove();
     },
 };
