@@ -83,7 +83,7 @@ export default <RoomPlugin<CursorPeerExtension, ObjectContextMenuRoomExtension &
                         );
                     }
                 },
-                "delete ✖": (ids) => {
+                "delete ❌": (ids) => {
                     for (const id of ids) {
                         room.objectPropertiesPlugin.deleteObject(id, true);
                     }

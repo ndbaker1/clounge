@@ -1,11 +1,12 @@
 import type { RoomPlugin } from "types";
 import type { ObjectPropertiesObjectExtension, ObjectPropertiesRoomExtension } from "./objectProperties";
 import type { ObjectContextMenuRoomExtension } from "./objectContextMenu";
+import type { ViewportAnchorRoomExtension } from "./viewportAnchor";
 
 import peerCursors from "./peerCursors";
 import objectProperties from "./objectProperties";
 import objectContextMenu from "./objectContextMenu";
-import type { ViewportAnchorRoomExtension } from "./viewportAnchor";
+import viewportAnchor from "./viewportAnchor";
 
 export default <RoomPlugin<
     object,
@@ -14,9 +15,9 @@ export default <RoomPlugin<
 >
     >{
         name: "objectPreview",
-        dependencies: [peerCursors.name, objectProperties.name, objectContextMenu.name],
+        dependencies: [peerCursors.name, objectProperties.name, objectContextMenu.name, viewportAnchor.name],
         initialize(room) {
-            room.objectContextMenuPlugin.optionHandlers["preview cards"] = (ids) => {
+            room.objectContextMenuPlugin.optionHandlers["preview cards 👀"] = (ids) => {
                 function closeWindow() {
                     previewContainer.remove();
                     window.removeEventListener("mouseup", closeWindow);
@@ -78,6 +79,6 @@ export default <RoomPlugin<
             };
         },
         cleanup(room) {
-            delete room.objectContextMenuPlugin.optionHandlers["preview cards"];
+            delete room.objectContextMenuPlugin.optionHandlers["preview cards 👀"];
         },
     };
