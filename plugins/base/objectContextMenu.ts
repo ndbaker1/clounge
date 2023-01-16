@@ -36,7 +36,7 @@ export default <RoomPlugin<
             room.objectContextMenuPlugin = {
                 menu,
                 menuOptions: new Map(Object.entries({
-                    "move ✋": (ids) => {
+                    "move and stack ✋": (ids) => {
                         const status = document.createElement("h3");
                         status.textContent = "left-click to move selected group.";
                         room.infoWindowPlugin.element.prepend(status);

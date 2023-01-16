@@ -16,11 +16,26 @@ export default <RoomPlugin<
         name: "objectPreview",
         dependencies: [objectProperties.name, objectContextMenu.name, viewportAnchor.name],
         initialize(room) {
-            room.objectContextMenuPlugin.menuOptions.set("preview 👀", (ids) => {
+            function openPreview(ids: number[]) {
                 function closeWindow() {
                     previewContainer.remove();
                     window.removeEventListener("mouseup", closeWindow);
                 }
+                function flipPreview() {
+                    itemContainer.querySelectorAll("img").forEach(previewItem => {
+                        const id = parseInt(previewItem.getAttribute(<OBJECT_ID_ATTRIBUTE>"object-id") ?? "");
+                        previewItem.src = previewItem.src === room.objects[id].descriptors.backImg
+                            ? room.objects[id].descriptors.frontImg
+                            : room.objects[id].descriptors.backImg;
+                    });
+                }
+                window.addEventListener("keyup", ({ key }) => {
+                    if (key === "Escape") {
+                        closeWindow();
+                    } else if (key === "f") {
+                        flipPreview();
+                    }
+                });
 
                 const previewContainer = document.createElement("div");
                 previewContainer.style.position = "fixed";
@@ -42,19 +57,12 @@ export default <RoomPlugin<
                 previewContainer.appendChild(buttonContainer);
 
                 const flipButton = document.createElement("button");
-                flipButton.textContent = "flip";
-                flipButton.onclick = () => {
-                    itemContainer.querySelectorAll("img").forEach(ele => {
-                        const id = parseInt(ele.getAttribute(<OBJECT_ID_ATTRIBUTE>"object-id") ?? "");
-                        ele.src = ele.src === room.objects[id].descriptors.backImg
-                            ? room.objects[id].descriptors.frontImg
-                            : room.objects[id].descriptors.backImg;
-                    });
-                };
+                flipButton.textContent = "flip preview";
+                flipButton.onclick = flipPreview;
                 buttonContainer.appendChild(flipButton);
 
                 const closeButton = document.createElement("button");
-                closeButton.textContent = "close ✖";
+                closeButton.textContent = "close ✖ (or press Escape)";
                 closeButton.onclick = closeWindow;
                 buttonContainer.appendChild(closeButton);
 
@@ -86,6 +94,20 @@ export default <RoomPlugin<
                 });
 
                 room.viewportAnchorPlugin.elementRef.appendChild(previewContainer);
+            }
+
+            room.objectContextMenuPlugin.menuOptions.set("preview 👀", openPreview);
+
+            window.addEventListener("mousedown", ({ ctrlKey, button }) => {
+                if (ctrlKey && button === 0) {
+                    const selectedIds = room.objectPropertiesPlugin.getObjectIdsUnderCursor();
+                    if (selectedIds.length > 0) {
+                        openPreview(selectedIds);
+                    }
+
+                    // extra insurance
+                    room.objectPropertiesPlugin.selectedObjectId = 0;
+                }
             });
         },
         cleanup(room) {

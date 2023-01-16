@@ -268,9 +268,33 @@ export default <RoomPlugin<
                 },
             };
 
-            window.addEventListener("mousedown", ({ button }) => {
+            window.addEventListener("mousedown", ({ shiftKey, button }) => {
                 // button == 0 means left click
-                if (button === 0) {
+                if (shiftKey && button === 0) {
+                    const ids = room.objectPropertiesPlugin.getObjectIdsUnderCursor();
+                    const status = document.createElement("h3");
+                    status.textContent = "release where you want to move the group.";
+                    room.infoWindowPlugin.element.prepend(status);
+
+                    const startPosition = Object.assign({}, room.self.cursorWorld);
+
+                    window.addEventListener("mouseup", function moveObjects({ button }) {
+                        if (button === 0) { // left click
+                            const delta = {
+                                x: room.self.cursorWorld.x - startPosition.x,
+                                y: room.self.cursorWorld.y - startPosition.y,
+                            };
+                            for (const id of ids) {
+                                room.objectPropertiesPlugin.setObjectPosition(id, {
+                                    x: room.objects[id].descriptors.x + delta.x,
+                                    y: room.objects[id].descriptors.y + delta.y,
+                                }, true);
+                            }
+                            status.remove();
+                            window.removeEventListener("mouseup", moveObjects);
+                        }
+                    });
+                } else if (button === 0) {
                     const hoveredElement = document.elementFromPoint(room.self.cursorScreen.x, room.self.cursorScreen.y);
                     const elementIdString = hoveredElement?.getAttribute(<OBJECT_ID_ATTRIBUTE>"object-id");
                     if (elementIdString != null) {

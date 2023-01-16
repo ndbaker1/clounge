@@ -24,7 +24,7 @@ export default <RoomPlugin<object, ObjectPropertiesRoomExtension, ObjectProperti
         uploadButton.style.padding = "0.5rem 0.8rem";
         uploadButton.onclick = async () => {
             try {
-                const loadRequest: Partial<ObjectDescriptors["descriptors"] & { count: number }>[] = JSON.parse(
+                const loadRequest: Partial<ObjectDescriptors["descriptors"] & { count: number } & Record<string, any>>[] = JSON.parse(
                     prompt(`
 Hope you understand typescript notation.
 Please enter a json string of the type: 
@@ -42,16 +42,40 @@ Array<{
                     `) ?? ""
                 );
 
-                loadRequest.forEach((spawn) => {
-                    for (let i = 0; i < (spawn.count ?? 1); i++) {
-                        const descriptors = room.objects[room.objectPropertiesPlugin.spawnObject(spawn)].descriptors;
+                let maxWidth = 0;
+                let offsetCounter = 0;
+                const offsetMap = new Map<string, number>();
 
-                        const message: ObjectMessage = { type: "object_spawn", descriptors };
-                        for (const id in room.peers) {
-                            room.peers[id].connection.send<ObjectMessage>(message);
+                loadRequest
+                    .map((spawn) => {
+                        if (spawn.label != null) {
+                            if (!offsetMap.has(spawn.label)) {
+                                offsetMap.set(spawn.label, offsetCounter++);
+                            }
+
+                            maxWidth = Math.max(maxWidth, spawn.width ?? 200);
                         }
-                    }
-                });
+
+                        return spawn;
+                    })
+                    .map((spawn) => {
+                        if (spawn.x == null) spawn.x = window.innerWidth / 2;
+                        if (spawn.label != null) {
+                            spawn.x += (offsetMap.get(spawn.label) ?? 0) * maxWidth;
+                        }
+
+                        return spawn;
+                    })
+                    .forEach((spawn) => {
+                        for (let i = 0; i < (spawn.count ?? 1); i++) {
+                            const descriptors = room.objects[room.objectPropertiesPlugin.spawnObject(spawn)].descriptors;
+
+                            const message: ObjectMessage = { type: "object_spawn", descriptors };
+                            for (const id in room.peers) {
+                                room.peers[id].connection.send<ObjectMessage>(message);
+                            }
+                        }
+                    });
             } catch (e) {
                 // Eh...
                 console.error("encountered issue loading an object.", e);
