@@ -7,6 +7,7 @@
 	import { PluginManager } from "clounge-plugins";
 
 	const PLUGIN_URLS_KEY = "pluginUrls";
+	const QUERY_PARAM_ID_OVERRIDE_KEY = "self";
 	const QUERY_PARAM_PEER_ID_KEY = "peer";
 
 	function noErrorParseJSON(json: string | null): string[] | null {
@@ -21,7 +22,8 @@
 	onMount(async () => {
 		const params = new URLSearchParams(location.search);
 		const peer = params.get(QUERY_PARAM_PEER_ID_KEY);
-		const self = new Peer();
+		const idOverride = params.get(QUERY_PARAM_ID_OVERRIDE_KEY);
+		const self = idOverride ? new Peer(idOverride) : new Peer();
 
 		const externalPlugins = noErrorParseJSON(sessionStorage.getItem(PLUGIN_URLS_KEY)) ?? [];
 		const plugins = await PluginManager.loadPlugins(externalPlugins);
