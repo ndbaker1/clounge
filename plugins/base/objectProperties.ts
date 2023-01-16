@@ -238,8 +238,11 @@ export default <RoomPlugin<
                     }
                 },
                 getObjectIdsUnderCursor() {
-                    return document.elementsFromPoint(room.self.cursorScreen.x, room.self.cursorScreen.y)
-                        .filter(ele => ele.hasAttribute(<OBJECT_ID_ATTRIBUTE>"object-id"))
+                    const elementsUnderCursor = document.elementsFromPoint(room.self.cursorScreen.x, room.self.cursorScreen.y);
+                    // stop at the first element that is not an object.
+                    // this will prevent future cases where objects are separated by menus,
+                    // and you only want to register objects that are in view, i.e. separated by the menus.
+                    return elementsUnderCursor.splice(0, elementsUnderCursor.findIndex(ele => !ele.hasAttribute(<OBJECT_ID_ATTRIBUTE>"object-id")))
                         .map(ele => parseInt(ele.getAttribute(<OBJECT_ID_ATTRIBUTE>"object-id") ?? ""));
                 },
                 placeRelative(id, targetId, way, isSelf) {

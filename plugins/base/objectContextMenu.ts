@@ -106,7 +106,7 @@ export default <RoomPlugin<
                             }
                         },
                     })),
-                    "insert after 👈": ([id]) => {
+                    "insert above 👈": ([id]) => {
                         const status = document.createElement("h3");
                         status.textContent = "left-click another group place above the object.";
                         room.infoWindowPlugin.element.prepend(status);
