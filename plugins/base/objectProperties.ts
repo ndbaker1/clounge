@@ -69,7 +69,7 @@ export type ObjectPropertiesRoomExtension = CursorRoomExtension & ViewportAnchor
         moveToFront: (id: number, isSelf: boolean) => void;
         placeRelative: (id: number, target: number, way: "after" | "before", isSelf: boolean) => void;
         flipObject: (id: number, side: "front" | "back", isSelf: boolean) => void;
-        deleteObject: (id: number, isSelf: boolean) => void;
+        deleteObject: (id: number, isSelf: boolean) => ObjectPropertiesObjectExtension;
         getObjectIdsUnderCursor: () => number[];
     }
 };
@@ -226,16 +226,19 @@ export default <RoomPlugin<
                     }
                 },
                 deleteObject: (id, isSelf) => {
-                    room.objects[id].element.remove();
+                    const objectRef = room.objects[id];
+
+                    objectContainer.removeChild(objectRef.element);
                     delete room.objects[id];
 
                     if (isSelf) {
                         const message: ObjectMessage = { type: "delete_object", id };
-
                         for (const id in room.peers) {
                             room.peers[id].connection.send<ObjectMessage>(message);
                         }
                     }
+
+                    return objectRef;
                 },
                 getObjectIdsUnderCursor() {
                     const elementsUnderCursor = document.elementsFromPoint(room.self.cursorScreen.x, room.self.cursorScreen.y);
