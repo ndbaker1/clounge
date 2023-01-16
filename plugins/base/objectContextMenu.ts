@@ -106,23 +106,16 @@ export default <RoomPlugin<
                             }
                         },
                     })),
-                    "insert 👈": (ids) => {
-                        const index = parseInt(prompt("insert at?") ?? "0");
+                    "insert after 👈": ([id]) => {
                         const status = document.createElement("h3");
-                        status.textContent = `left-click another group to insert after index ${index}.`;
+                        status.textContent = "left-click another group place above the object.";
                         room.infoWindowPlugin.element.prepend(status);
 
                         window.addEventListener("mousedown", function moveObjects({ button }) {
                             if (button === 0) { // left click
-                                if (ids[index] != null) {
-                                    const selectedObjectIds = room.objectPropertiesPlugin.getObjectIdsUnderCursor();
-
-                                    for (const id of selectedObjectIds) {
-                                        room.objectPropertiesPlugin.placeRelative(id, ids[index], "after", true);
-                                    }
-                                } else {
-                                    // more error handling later
-                                    console.error("invalid insert id.");
+                                const selectedObjectIds = room.objectPropertiesPlugin.getObjectIdsUnderCursor();
+                                for (const selectedId of selectedObjectIds) {
+                                    room.objectPropertiesPlugin.placeRelative(selectedId, id, "after", true);
                                 }
 
                                 status.remove();

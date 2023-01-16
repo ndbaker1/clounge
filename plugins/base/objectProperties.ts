@@ -302,8 +302,7 @@ export default <RoomPlugin<
                 }
 
                 // element-wise copy to avoid aliasing
-                room.objectPropertiesPlugin.previousPosition.x = room.self.cursorWorld.x;
-                room.objectPropertiesPlugin.previousPosition.y = room.self.cursorWorld.y;
+                room.objectPropertiesPlugin.previousPosition = Object.assign({}, room.self.cursorWorld);
             });
         },
         peerSetup(room, peerId) {

@@ -1,5 +1,5 @@
 import type { RoomPlugin } from "types";
-import type { ObjectPropertiesObjectExtension, ObjectPropertiesRoomExtension } from "./objectProperties";
+import type { ObjectPropertiesObjectExtension, ObjectPropertiesRoomExtension, OBJECT_ID_ATTRIBUTE } from "./objectProperties";
 import type { ObjectContextMenuRoomExtension } from "./objectContextMenu";
 import type { ViewportAnchorRoomExtension } from "./viewportAnchor";
 
@@ -21,6 +21,11 @@ export default <RoomPlugin<
                     previewContainer.remove();
                     window.removeEventListener("mouseup", closeWindow);
                 }
+                window.addEventListener("mouseup", ({ button }) => {
+                    if (button === 0) {
+                        closeWindow();
+                    }
+                });
 
                 const previewContainer = document.createElement("div");
                 previewContainer.style.position = "fixed";
@@ -60,17 +65,11 @@ export default <RoomPlugin<
 
                     const image = document.createElement("img");
                     image.src = room.objects[id].descriptors.currentImg ?? "";
+                    image.setAttribute(<OBJECT_ID_ATTRIBUTE>"object-id", id.toString());
                     image.width = 80;
-                    image.onmousedown = ({ button }) => {
-                        if (button === 0) { // left click
-                            closeWindow();
-                            room.objectPropertiesPlugin.selectedObjectId = id;
-                        }
-                    };
 
                     objectPreview.appendChild(image);
                     objectPreview.appendChild(text);
-
                     itemContainer.appendChild(objectPreview);
                 });
 

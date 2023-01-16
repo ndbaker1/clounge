@@ -1,5 +1,5 @@
 import type { RoomPlugin } from "types";
-import type { ObjectDescriptors, ObjectPropertiesRoomExtension, OBJECT_ID_ATTRIBUTE } from "./objectProperties";
+import type { ObjectDescriptors, ObjectPropertiesRoomExtension } from "./objectProperties";
 import type { CursorPeerExtension } from "./peerCursors";
 import type { ObjectContextMenuRoomExtension } from "./objectContextMenu";
 
@@ -14,7 +14,7 @@ export type ObjectSnappingObjectExtension = ObjectDescriptors<{
 export default <RoomPlugin<
     CursorPeerExtension,
     ObjectPropertiesRoomExtension & ObjectContextMenuRoomExtension,
-    ObjectSnappingObjectExtension & number
+    ObjectSnappingObjectExtension
 >
     >{
         name: "objectSnapping",
