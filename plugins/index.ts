@@ -8,6 +8,7 @@ import objectProperties from "./base/objectProperties";
 import objectSnapping from "./base/objectSnapping";
 import peerCursors from "./base/peerCursors";
 import peerRelaying from "./base/peerRelaying";
+import peerSpectate from "./base/peerSpectate";
 import pluginManager from "./base/pluginManager";
 import roomSharing from "./base/roomSharing";
 import theme from "./base/theme";
@@ -35,6 +36,7 @@ export class PluginManager {
             objectLoader,
             objectPreview,
             objectSnapping,
+            peerSpectate,
             peerRelaying,
             pluginManager,
             roomSharing,

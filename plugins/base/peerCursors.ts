@@ -170,11 +170,7 @@ export default <RoomPlugin<CursorPeerExtension, CursorRoomExtension & ViewportAn
         window.addEventListener("mouseup", () => {
             room.self.cursorImage.src = point;
 
-            const message: MouseMessage = {
-                type: "mouse_press",
-                pressed: false,
-            };
-
+            const message: MouseMessage = { type: "mouse_press", pressed: false };
             for (const id in room.peers) {
                 room.peers[id].connection.send<MouseMessage>(message);
             }
