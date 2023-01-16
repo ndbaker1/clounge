@@ -7,14 +7,14 @@ export type ViewportAnchorRoomExtension = {
     viewportAnchorPlugin: {
         elementRef: HTMLElement;
         position: Vector2D;
-        setPosition: (x: number, y: number) => void;
-        move: (x: number, y: number) => void;
+        setPosition: (pos: Vector2D) => void;
+        move: (delta: Vector2D) => void;
     }
 } & InfoWindowRoomExtension;
 
 const internalState = {
-    mousepressed: false,
-    oldPosition: { x: 0, y: 0 },
+    middleClick: false,
+    previousPosition: { x: 0, y: 0 },
 };
 
 let anchorCoordinateElement: HTMLElement;
@@ -32,39 +32,39 @@ export default <RoomPlugin<object, ViewportAnchorRoomExtension>>{
         room.infoWindowPlugin.element.prepend(anchorCoordinateElement);
 
         room.viewportAnchorPlugin = {
-            setPosition(x: number, y: number) {
-                this.position.x = x;
-                this.position.y = y;
+            setPosition({ x, y }) {
+                this.position = { x, y };
                 this.elementRef.style.left = x + "px";
                 this.elementRef.style.top = y + "px";
             },
-            move(x: number, y: number) {
-                this.setPosition(this.position.x + x, this.position.y + y);
+            move({ x, y }) {
+                this.setPosition({
+                    x: this.position.x + x,
+                    y: this.position.y + y,
+                });
             },
             position: { x: 0, y: 0 },
             elementRef,
         };
 
         window.addEventListener("mousedown", ({ button }) => {
-            if (button === 1) internalState.mousepressed = true;
+            if (button === 1) internalState.middleClick = true;
         });
         window.addEventListener("mouseup", ({ button }) => {
-            if (button === 1) internalState.mousepressed = false;
+            if (button === 1) internalState.middleClick = false;
         });
-        window.addEventListener("mousemove", ({ clientX, clientY }) => {
-            if (internalState.mousepressed) {
-                const delta: Vector2D = {
-                    x: clientX - internalState.oldPosition.x,
-                    y: clientY - internalState.oldPosition.y,
-                };
 
-                room.viewportAnchorPlugin.move(delta.x, delta.y);
+        window.addEventListener("mousemove", ({ clientX, clientY }) => {
+            if (internalState.middleClick) {
+                room.viewportAnchorPlugin.move({
+                    x: clientX - internalState.previousPosition.x,
+                    y: clientY - internalState.previousPosition.y,
+                });
+
+                anchorCoordinateElement.textContent = `Viewport: (${-room.viewportAnchorPlugin.position.x}, ${-room.viewportAnchorPlugin.position.y})`;
             }
 
-            internalState.oldPosition.x = clientX;
-            internalState.oldPosition.y = clientY;
-
-            anchorCoordinateElement.textContent = `Viewport: (${-room.viewportAnchorPlugin.position.x}, ${-room.viewportAnchorPlugin.position.y})`;
+            internalState.previousPosition = { x: clientX, y: clientY };
         });
     },
     cleanup(room) {
