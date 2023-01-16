@@ -4,7 +4,7 @@
   "description": "peer2peer lounge supportings user plugins",
   "scripts": {
     "format": "eslint . --ignore-path .gitignore --fix",
-    "dev": "cd site && npm run dev"
+    "start": "cd site && npm run dev -- --open"
   },
   "repository": {
     "type": "git",
