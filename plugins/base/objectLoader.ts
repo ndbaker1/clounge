@@ -1,12 +1,12 @@
 import type { RoomPlugin } from "types";
-import type { ObjectDescriptors, ObjectMessage, ObjectPropertiesRoomExtension } from "./objectProperties";
+import type { ObjectDescriptors, ObjectMessage, ObjectPropertiesObjectExtension, ObjectPropertiesRoomExtension } from "./objectProperties";
 
 // local libs
 import objectProperties from "./objectProperties";
 
 let actionContainer: HTMLElement;
 
-export default <RoomPlugin<object, ObjectPropertiesRoomExtension>>{
+export default <RoomPlugin<object, ObjectPropertiesRoomExtension, ObjectPropertiesObjectExtension>>{
     name: "objectLoader",
     dependencies: [objectProperties.name],
     initialize(room) {
@@ -44,15 +44,11 @@ Array<{
 
                 loadRequest.forEach((spawn) => {
                     for (let i = 0; i < (spawn.count ?? 1); i++) {
-                        const { descriptors } = room.objectPropertiesPlugin.spawnObject(spawn);
+                        const descriptors = room.objects[room.objectPropertiesPlugin.spawnObject(spawn)].descriptors;
 
-                        const message: ObjectMessage = {
-                            type: "object_spawn",
-                            descriptors,
-                        };
-
+                        const message: ObjectMessage = { type: "object_spawn", descriptors };
                         for (const id in room.peers) {
-                            room.peers[id].connection.send(message);
+                            room.peers[id].connection.send<ObjectMessage>(message);
                         }
                     }
                 });

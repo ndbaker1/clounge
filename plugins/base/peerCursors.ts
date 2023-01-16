@@ -44,11 +44,11 @@ export type CursorRoomExtension = {
         createCursor: () => CursorElements;
         moveCursor: (pos: Vector2D, id: PeerID) => void;
     };
-} & ViewportAnchorRoomExtension;
+};
 
 let mouseCoordinateElement: HTMLElement;
 
-export default <RoomPlugin<CursorPeerExtension, CursorRoomExtension>>{
+export default <RoomPlugin<CursorPeerExtension, CursorRoomExtension & ViewportAnchorRoomExtension>>{
     name: "peerCursors",
     dependencies: [viewportAnchorPlugin.name, namePlugin.name, infoWindow.name],
     processMessage(room, data: MouseMessage | SyncMessage, peerId) {

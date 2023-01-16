@@ -1,5 +1,5 @@
 import type { RoomPlugin } from "types";
-import type { ObjectDescriptors, ObjectPropertiesObjectExtension, ObjectPropertiesRoomExtension, OBJECT_ID_ATTRIBUTE } from "./objectProperties";
+import type { ObjectDescriptors, ObjectPropertiesRoomExtension, OBJECT_ID_ATTRIBUTE } from "./objectProperties";
 import type { CursorPeerExtension } from "./peerCursors";
 import type { ObjectContextMenuRoomExtension } from "./objectContextMenu";
 
@@ -14,13 +14,13 @@ export type ObjectSnappingObjectExtension = ObjectDescriptors<{
 export default <RoomPlugin<
     CursorPeerExtension,
     ObjectPropertiesRoomExtension & ObjectContextMenuRoomExtension,
-    ObjectSnappingObjectExtension & ObjectPropertiesObjectExtension
+    ObjectSnappingObjectExtension & number
 >
     >{
         name: "objectSnapping",
         dependencies: [peerCursors.name, objectProperties.name, objectContextMenu.name],
         initialize(room) {
-            room.objectContextMenuPlugin.menuOptions.set("snapping", new Map(Object.entries({
+            room.objectContextMenuPlugin.menuOptions.set("snapping 🔳", new Map(Object.entries({
                 "snapping on": (ids) => {
                     for (const id of ids) {
                         room.objects[id].descriptors.snap = true;
@@ -35,20 +35,13 @@ export default <RoomPlugin<
 
             window.addEventListener("mouseup", ({ button }) => {
                 if (button === 0) { // left button up after drag
-                    const hoveredElements = document
-                        .elementsFromPoint(room.self.cursorScreen.x, room.self.cursorScreen.y)
-                        .filter(ele => ele.hasAttribute(<OBJECT_ID_ATTRIBUTE>"object-id"));
+                    const hoveredObjectIds = room.objectPropertiesPlugin.getObjectIdsUnderCursor();
+                    const [topId, stackId] = [hoveredObjectIds.shift(), hoveredObjectIds.shift()];
 
-                    const [top, stack] = [hoveredElements.shift(), hoveredElements.shift()];
+                    if (stackId != null && topId != null) {
+                        const topDescriptors = room.objects[topId].descriptors;
 
-                    const stackIdString = stack?.getAttribute(<OBJECT_ID_ATTRIBUTE>"object-id");
-                    const topIdString = top?.getAttribute(<OBJECT_ID_ATTRIBUTE>"object-id");
-                    if (stackIdString != null && topIdString != null) {
-                        const topId = parseInt(topIdString);
-                        const topRoomObjectDescriptors = room.objects[topId].descriptors;
-                        if (topRoomObjectDescriptors.snap != null && topRoomObjectDescriptors.snap) {
-                            const stackId = parseInt(stackIdString);
-
+                        if (topDescriptors.snap != null && topDescriptors.snap) {
                             room.objectPropertiesPlugin.setObjectPosition(
                                 topId,
                                 room.objects[stackId].descriptors,
@@ -60,6 +53,6 @@ export default <RoomPlugin<
             });
         },
         cleanup(room) {
-            room.objectContextMenuPlugin.menuOptions.delete("snapping");
+            room.objectContextMenuPlugin.menuOptions.delete("snapping 🔳");
         },
     };

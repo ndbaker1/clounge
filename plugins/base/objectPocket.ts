@@ -3,6 +3,7 @@ import type { ObjectPropertiesObjectExtension, ObjectPropertiesRoomExtension } f
 import type { ObjectContextMenuRoomExtension } from "./objectContextMenu";
 import type { ViewportAnchorRoomExtension } from "./viewportAnchor";
 
+import peerCursors from "./peerCursors";
 import objectProperties from "./objectProperties";
 import objectContextMenu from "./objectContextMenu";
 import viewportAnchor from "./viewportAnchor";
@@ -13,10 +14,57 @@ export default <RoomPlugin<
     ObjectPropertiesObjectExtension
 >
     >{
-        name: "objectPreview",
-        dependencies: [objectProperties.name, objectContextMenu.name, viewportAnchor.name],
+        name: "objectPocket",
+        dependencies: [peerCursors.name, objectProperties.name, objectContextMenu.name, viewportAnchor.name],
         initialize(room) {
-            room.objectContextMenuPlugin.menuOptions.set("preview 👀", (ids) => {
+
+            const pocket = document.createElement("div");
+            pocket.id = "pocket";
+            pocket.style.position = "fixed";
+            pocket.style.bottom = "0";
+            pocket.style.right = "1rem";
+            pocket.style.width = "20rem";
+            pocket.style.padding = "1rem";
+            pocket.style.borderRadius = "1rem 1rem 0 0";
+            pocket.style.backgroundColor = "#312F2";
+            pocket.style.transition = "ease 400ms";
+            pocket.style.transform = "translateY(150%)";
+            pocket.style.boxShadow = "black 1px 4px 12px";
+
+            room.viewportAnchorPlugin.elementRef.appendChild(pocket);
+
+            const pocketIcon = document.createElement("button");
+            pocketIcon.id = "pocket-button";
+            pocketIcon.style.position = "fixed";
+            pocketIcon.style.bottom = "0";
+            pocketIcon.style.right = "5rem";
+            pocketIcon.style.padding = "1rem";
+            pocket.style.transition = "ease 400ms";
+            pocketIcon.style.borderRadius = "1rem 1rem 0 0";
+            pocketIcon.style.backgroundColor = "#59405C";
+            pocketIcon.textContent = "Pocket 💼";
+
+            const closeButton = document.createElement("button");
+            closeButton.textContent = "close ✖";
+            closeButton.style.padding = "0.2rem";
+            closeButton.style.height = "2rem";
+            closeButton.style.margin = "0.6rem";
+            closeButton.onclick = () => {
+                pocket.style.transform = "translateY(150%)";
+                pocketIcon.style.transform = "";
+            };
+            pocket.appendChild(closeButton);
+
+            room.viewportAnchorPlugin.elementRef.appendChild(pocketIcon);
+
+            pocketIcon.onclick = () => {
+                pocket.style.transform = "";
+                pocketIcon.style.transform = "translateY(150%)";
+
+            };
+
+
+            room.objectContextMenuPlugin.menuOptions.set("pocket 💼", (ids) => {
                 function closeWindow() {
                     previewContainer.remove();
                     window.removeEventListener("mouseup", closeWindow);
@@ -78,6 +126,6 @@ export default <RoomPlugin<
             });
         },
         cleanup(room) {
-            room.objectContextMenuPlugin.menuOptions.delete("preview 👀");
+            room.objectContextMenuPlugin.menuOptions.delete("pocket 💼");
         },
     };

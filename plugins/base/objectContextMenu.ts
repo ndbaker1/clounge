@@ -1,6 +1,6 @@
 import type { RoomPlugin } from "types";
 
-import type { ObjectPropertiesObjectExtension, ObjectPropertiesRoomExtension, OBJECT_ID_ATTRIBUTE } from "./objectProperties";
+import type { ObjectPropertiesObjectExtension, ObjectPropertiesRoomExtension } from "./objectProperties";
 import type { CursorPeerExtension } from "./peerCursors";
 import type { ViewportAnchorRoomExtension } from "./viewportAnchor";
 
@@ -53,8 +53,9 @@ export default <RoomPlugin<
                     },
                     "shuffle 🔀": (ids) => {
                         for (const id of ids) {
+                            // crude arbitrary probability randomized
                             if (Math.random() > 0.5) {
-                                room.objectPropertiesPlugin.moveElementToFront(id, true);
+                                room.objectPropertiesPlugin.moveToFront(id, true);
                             }
                         }
                     },
@@ -71,7 +72,12 @@ export default <RoomPlugin<
                         },
                         "reverse all 🔀": (ids) => {
                             for (const id of ids) {
-                                room.objectPropertiesPlugin.flipObject(id, "back", true);
+                                room.objectPropertiesPlugin.flipObject(
+                                    id,
+                                    room.objects[id].descriptors.currentImg === room.objects[id].descriptors.backImg
+                                        ? "front"
+                                        : "back",
+                                    true);
                             }
                         },
                     })),
@@ -100,9 +106,36 @@ export default <RoomPlugin<
                             }
                         },
                     })),
+                    "insert 👈": (ids) => {
+                        const index = parseInt(prompt("insert at?") ?? "0");
+                        const status = document.createElement("h3");
+                        status.textContent = `left-click another group to insert after index ${index}.`;
+                        room.infoWindowPlugin.element.prepend(status);
+
+                        window.addEventListener("mousedown", function moveObjects({ button }) {
+                            if (button === 0) { // left click
+                                if (ids[index] != null) {
+                                    const selectedObjectIds = room.objectPropertiesPlugin.getObjectIdsUnderCursor();
+
+                                    for (const id of selectedObjectIds) {
+                                        room.objectPropertiesPlugin.placeRelative(id, ids[index], "after", true);
+                                    }
+                                } else {
+                                    // more error handling later
+                                    console.error("invalid insert id.");
+                                }
+
+                                status.remove();
+                                window.removeEventListener("mousedown", moveObjects);
+                            }
+                        });
+                    },
                     "delete ❌": (ids) => {
-                        for (const id of ids) {
-                            room.objectPropertiesPlugin.deleteObject(id, true);
+                        // make it harder for accidental deletion
+                        if (confirm("are you sure?")) {
+                            for (const id of ids) {
+                                room.objectPropertiesPlugin.deleteObject(id, true);
+                            }
                         }
                     },
                 })),
@@ -120,10 +153,8 @@ export default <RoomPlugin<
 
                 for (const [optionText, optionEntry] of handlers.entries()) {
                     const optionRef = document.createElement("button");
-                    optionRef.style.padding = "0.2rem 0.6rem";
-                    const text = document.createElement("small");
-                    text.textContent = optionText;
-                    optionRef.appendChild(text);
+                    optionRef.style.padding = "0.4rem 0.6rem";
+                    optionRef.textContent = optionText;
 
                     if (typeof (optionEntry) == "function") {
                         optionRef.onclick = () => optionEntry(ids);
@@ -148,9 +179,7 @@ export default <RoomPlugin<
 
                 if (room.objectContextMenuPlugin.menuOptions.size === 0) return;
 
-                const hoveredElementIds = document.elementsFromPoint(room.self.cursorScreen.x, room.self.cursorScreen.y)
-                    .filter(ele => ele.hasAttribute(<OBJECT_ID_ATTRIBUTE>"object-id"))
-                    .map(ele => parseInt(ele.getAttribute(<OBJECT_ID_ATTRIBUTE>"object-id") ?? ""));
+                const hoveredElementIds = room.objectPropertiesPlugin.getObjectIdsUnderCursor();
 
                 if (hoveredElementIds.length > 0) {
                     room.objectContextMenuPlugin.menu.style.left = room.self.cursorScreen.x + "px";
