@@ -7,6 +7,11 @@ import objectProperties from "./objectProperties";
 import objectContextMenu from "./objectContextMenu";
 import viewportAnchor from "./viewportAnchor";
 
+const CONSTANTS = {
+    exitKey: "Escape",
+    flipKey: "w",
+};
+
 export default <RoomPlugin<
     object,
     ObjectPropertiesRoomExtension & ObjectContextMenuRoomExtension & ViewportAnchorRoomExtension,
@@ -30,9 +35,9 @@ export default <RoomPlugin<
                     });
                 }
                 window.addEventListener("keyup", ({ key }) => {
-                    if (key === "Escape") {
+                    if (key === CONSTANTS.exitKey) {
                         closeWindow();
-                    } else if (key === "f") {
+                    } else if (key === CONSTANTS.flipKey) {
                         flipPreview();
                     }
                 });
@@ -57,12 +62,12 @@ export default <RoomPlugin<
                 previewContainer.appendChild(buttonContainer);
 
                 const flipButton = document.createElement("button");
-                flipButton.textContent = "flip preview";
+                flipButton.textContent = `flip all in preview (or "${CONSTANTS.flipKey}")`;
                 flipButton.onclick = flipPreview;
                 buttonContainer.appendChild(flipButton);
 
                 const closeButton = document.createElement("button");
-                closeButton.textContent = "close ✖ (or press Escape)";
+                closeButton.textContent = `close ✖ (or "${CONSTANTS.exitKey}")`;
                 closeButton.onclick = closeWindow;
                 buttonContainer.appendChild(closeButton);
 

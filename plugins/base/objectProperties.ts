@@ -24,6 +24,8 @@ export type ObjectDescriptors<
     }
 };
 
+type FlipOptions = "front" | "back" | "flip";
+
 export type ObjectMessage =
     | Message<"object_position", {
         id: number;
@@ -43,7 +45,7 @@ export type ObjectMessage =
     }>
     | Message<"object_flip", {
         id: number;
-        side: "front" | "back";
+        side: FlipOptions;
     }>
     | Message<"object_spawn", {
         descriptors: ObjectDescriptors["descriptors"];
@@ -68,7 +70,7 @@ export type ObjectPropertiesRoomExtension = CursorRoomExtension & ViewportAnchor
         setObjectPosition: (id: number, position: Vector2D, isSelf: boolean) => void;
         moveToFront: (id: number, isSelf: boolean) => void;
         placeRelative: (id: number, target: number, way: "after" | "before", isSelf: boolean) => void;
-        flipObject: (id: number, side: "front" | "back", isSelf: boolean) => void;
+        flipObject: (id: number, side: FlipOptions, isSelf: boolean) => void;
         deleteObject: (id: number, isSelf: boolean) => ObjectPropertiesObjectExtension;
         getObjectIdsUnderCursor: () => number[];
     }
@@ -79,6 +81,14 @@ export type ObjectPropertiesRoomExtension = CursorRoomExtension & ViewportAnchor
 // <OBJECT_ID_ATTRIBUTE>"object-id"
 export type OBJECT_ID_ATTRIBUTE = "object-id";
 
+const CONSTANTS = {
+    flipKey: "f",
+    zoomKey: " ",
+};
+
+let zoomedElement: HTMLImageElement;
+let objectContainer: HTMLDivElement;
+
 export default <RoomPlugin<
     ObjectPropertiesPeerExtension,
     ObjectPropertiesRoomExtension,
@@ -87,9 +97,6 @@ export default <RoomPlugin<
     >{
         name: "objectProperties",
         dependencies: [cursorPlugin.name, viewportAnchorPlugin.name],
-        cleanup(room) {
-            room.objectPropertiesPlugin.objectContainer.remove();
-        },
         processMessage(room, data: ObjectMessage) {
             if (data?.type === "object_position") {
                 room.objectPropertiesPlugin.setObjectPosition(data.id, data.position, false);
@@ -108,10 +115,19 @@ export default <RoomPlugin<
             }
         },
         initialize(room) {
-            const objectContainer = document.createElement("div");
+            objectContainer = document.createElement("div");
             objectContainer.style.position = "relative";
             objectContainer.style.zIndex = String(-1);
             room.viewportAnchorPlugin.elementRef.appendChild(objectContainer);
+
+            zoomedElement = document.createElement("img");
+            zoomedElement.style.position = "fixed";
+            zoomedElement.style.top = "10vh";
+            zoomedElement.style.left = "50%";
+            zoomedElement.style.transform = "translate(-50%)";
+            zoomedElement.style.height = "80vh";
+            zoomedElement.style.display = "none";
+            room.viewportAnchorPlugin.elementRef.appendChild(zoomedElement);
 
             // ROOM DATA INITIALIZED
             room.objectPropertiesPlugin = {
@@ -210,12 +226,23 @@ export default <RoomPlugin<
                     }
                 },
                 flipObject: (id, side, isSelf) => {
-                    const newImage = side === "front"
-                        ? room.objects[id].descriptors.frontImg
-                        : room.objects[id].descriptors.backImg;
+                    const roomObject = room.objects[id];
 
-                    room.objects[id].descriptors.currentImg = newImage;
-                    room.objects[id].element.src = newImage;
+                    function getNewImg() {
+                        if (side === "flip") {
+                            return roomObject.descriptors.currentImg === roomObject.descriptors.backImg
+                                ? roomObject.descriptors.frontImg
+                                : roomObject.descriptors.backImg;
+                        }
+
+                        return side === "front"
+                            ? roomObject.descriptors.frontImg
+                            : roomObject.descriptors.backImg;
+                    }
+
+                    const newImage = getNewImg();
+                    roomObject.descriptors.currentImg = newImage;
+                    roomObject.element.src = newImage;
 
                     if (isSelf) {
                         const message: ObjectMessage = { type: "object_flip", side, id };
@@ -334,6 +361,30 @@ export default <RoomPlugin<
                 // element-wise copy to avoid aliasing
                 room.objectPropertiesPlugin.previousPosition = Object.assign({}, room.self.cursorWorld);
             });
+
+            window.addEventListener("keydown", ({ key }) => {
+                // Object Flipping
+                if (key === CONSTANTS.flipKey) {
+                    const topId = room.objectPropertiesPlugin.getObjectIdsUnderCursor().shift();
+                    if (topId != null) {
+                        room.objectPropertiesPlugin.flipObject(topId, "flip", true);
+                    }
+                }
+                // Zoomed Object Preview
+                else if (key === CONSTANTS.zoomKey) {
+                    const topId = room.objectPropertiesPlugin.getObjectIdsUnderCursor().shift();
+                    if (topId != null) {
+                        zoomedElement.src = room.objects[topId].descriptors.currentImg ?? "";
+                        zoomedElement.style.display = "block";
+                    }
+                }
+            });
+
+            window.addEventListener("keyup", ({ key }) => {
+                if (key === CONSTANTS.zoomKey) {
+                    zoomedElement.style.display = "none";
+                }
+            });
         },
         peerSetup(room, peerId) {
             // trick to send updates in order by how hey appear in the DOM
@@ -347,5 +398,9 @@ export default <RoomPlugin<
                     room.peers[peerId].connection.send<ObjectMessage>(message);
                 }
             }
+        },
+        cleanup() {
+            zoomedElement.remove();
+            objectContainer.remove();
         },
     };
