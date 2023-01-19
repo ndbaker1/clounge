@@ -33,7 +33,7 @@ jobs:
         uses: actions/configure-pages@v2
       - name: Install and Build
         env:
-          BASE_HREF: clounge
+          BASE_HREF: tablesalt
         run: |
           cd site
           npm install

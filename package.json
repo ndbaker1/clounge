@@ -1,5 +1,5 @@
 {
-  "name": "clounge",
+  "name": "tablesalt",
   "version": "1.0.0",
   "description": "peer2peer lounge supportings user plugins",
   "scripts": {
@@ -8,13 +8,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ndbaker1/clounge.git"
+    "url": "git+https://github.com/ndbaker1/tablesalt.git"
   },
   "author": "Nicholas Baker",
   "bugs": {
-    "url": "https://github.com/ndbaker1/clounge/issues"
+    "url": "https://github.com/ndbaker1/tablesalt/issues"
   },
-  "homepage": "https://github.com/ndbaker1/clounge#readme",
+  "homepage": "https://github.com/ndbaker1/tablesalt#readme",
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.48.1",
     "@typescript-eslint/parser": "^5.48.1",

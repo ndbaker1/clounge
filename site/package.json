@@ -30,8 +30,8 @@
 		"vite": "^4.0.0"
 	},
 	"dependencies": {
-		"clounge-types": "file:../types",
-		"clounge-plugins": "file:../plugins",
+		"tablesalt-types": "file:../types",
+		"tablesalt-plugins": "file:../plugins",
 		"peerjs": "^1.4.7"
 	}
 }

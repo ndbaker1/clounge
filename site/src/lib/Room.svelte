@@ -3,8 +3,8 @@
 
 	import { type DataConnection, Peer } from "peerjs";
 
-	import type { RoomData } from "clounge-types";
-	import { PluginManager } from "clounge-plugins";
+	import type { RoomData } from "tablesalt-types";
+	import { PluginManager } from "tablesalt-plugins";
 
 	const PLUGIN_URLS_KEY = "pluginUrls";
 	const QUERY_PARAM_ID_OVERRIDE_KEY = "self";

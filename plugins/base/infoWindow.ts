@@ -24,7 +24,7 @@ export default <RoomPlugin<object, InfoWindowRoomExtension>>{
         const repo = document.createElement("a");
         repo.text = "Github Link 💻";
         repo.target = "_blank noreferrer";
-        repo.href = "https://github.com/ndbaker1/clounge";
+        repo.href = "https://github.com/ndbaker1/tablesalt";
         infoWindow.appendChild(repo);
 
         // ROOM DATA INITIALIZED

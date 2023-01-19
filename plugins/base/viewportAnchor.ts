@@ -28,7 +28,7 @@ export default <RoomPlugin<object, ViewportAnchorRoomExtension>>{
         elementRef.style.zIndex = String(9999);
         document.body.appendChild(elementRef);
 
-        anchorCoordinateElement = document.createElement("p");
+        anchorCoordinateElement = document.createElement("small");
         room.infoWindowPlugin.element.prepend(anchorCoordinateElement);
 
         room.viewportAnchorPlugin = {

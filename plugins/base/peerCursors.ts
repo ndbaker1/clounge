@@ -65,7 +65,7 @@ export default <RoomPlugin<CursorPeerExtension, CursorRoomExtension & ViewportAn
         cursorContainer.style.zIndex = String(9999);
         room.viewportAnchorPlugin.elementRef.appendChild(cursorContainer);
 
-        mouseCoordinateElement = document.createElement("p");
+        mouseCoordinateElement = document.createElement("small");
         room.infoWindowPlugin.element.prepend(mouseCoordinateElement);
 
         // ROOM DATA INITIALIZED

@@ -40,9 +40,18 @@ export default <RoomPlugin>{
         } input:focus {
           outline: 1px solid #87556F;
         }
-      `;
-
+        `;
         document.head.appendChild(styleElement);
+
+        const logo = document.createElement("h1");
+        logo.textContent = "🧂";
+        logo.style.position = "absolute";
+        logo.style.bottom = "0";
+        logo.style.left = "1rem";
+        logo.style.fontSize = "6rem";
+        logo.style.margin = "0";
+        logo.style.opacity = "0.08";
+        document.body.prepend(logo);
     },
     cleanup() {
         styleElement.remove();

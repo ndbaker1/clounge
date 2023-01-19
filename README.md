@@ -1,4 +1,4 @@
-# 🛋 Clounge
+# 🧂 tablesalt
 
 This project is an experiment with peer-to-peer collaborative sessions combined with dynamically loaded plugins.
 

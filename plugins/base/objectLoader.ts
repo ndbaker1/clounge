@@ -1,6 +1,36 @@
 import type { RoomPlugin } from "types";
 import type { ObjectDescriptors, ObjectMessage, ObjectPropertiesObjectExtension, ObjectPropertiesRoomExtension } from "./objectProperties";
 
+/**
+ * Expected type of JSON payload describing object properties, instance number, and sorting label.
+ * 
+ * When a group label is specified the positioning is done automatically,  
+ * so only provide (x, y) coordinates to objects which do not belong in a group.
+ * 
+ * @example
+    [
+     {
+         "count": 1,
+         "frontImg": "https://upload.wikimedia.org/wikipedia/commons/d/db/Blue_card.svg",
+         "groupLabel": "blue"
+     },
+     {
+         "count": 2,
+         "frontImg": "https://upload.wikimedia.org/wikipedia/commons/e/e7/Red_card.svg",
+         "groupLabel": "red"
+     },
+     {
+         "count": 3,
+         "frontImg": "https://upload.wikimedia.org/wikipedia/commons/b/b1/Yellow_card.svg",
+         "groupLabel": "yellow"
+     }
+    ]
+ */
+export type ObjectLoadDescriptor = Partial<ObjectDescriptors["descriptors"] & {
+    count: number;
+    groupLabel: string;
+}>;
+
 // local libs
 import objectProperties from "./objectProperties";
 
@@ -14,17 +44,17 @@ export default <RoomPlugin<object, ObjectPropertiesRoomExtension, ObjectProperti
         actionContainer = document.createElement("div");
         actionContainer.style.position = "fixed";
         actionContainer.style.display = "grid";
-        actionContainer.style.top = "0";
-        actionContainer.style.right = "10rem";
+        actionContainer.style.top = "3rem";
+        actionContainer.style.right = "0";
         actionContainer.style.padding = "1rem";
         actionContainer.style.gap = "0.2rem";
 
         const uploadButton = document.createElement("button");
-        uploadButton.innerText = "📷 Load Object Descriptor";
+        uploadButton.innerText = "📷 Load Objects";
         uploadButton.style.padding = "0.5rem 0.8rem";
         uploadButton.onclick = async () => {
             try {
-                const loadRequest: Partial<ObjectDescriptors["descriptors"] & { count: number } & Record<string, any>>[] = JSON.parse(
+                const loadRequest: ObjectLoadDescriptor[] = JSON.parse(
                     prompt(`
 Hope you understand typescript notation.
 Please enter a json string of the type: 
@@ -48,9 +78,9 @@ Array<{
 
                 loadRequest
                     .map((spawn) => {
-                        if (spawn.label != null) {
-                            if (!offsetMap.has(spawn.label)) {
-                                offsetMap.set(spawn.label, offsetCounter++);
+                        if (spawn.groupLabel != null) {
+                            if (!offsetMap.has(spawn.groupLabel)) {
+                                offsetMap.set(spawn.groupLabel, offsetCounter++);
                             }
 
                             maxWidth = Math.max(maxWidth, spawn.width ?? 200);
@@ -60,8 +90,8 @@ Array<{
                     })
                     .map((spawn) => {
                         if (spawn.x == null) spawn.x = window.innerWidth / 2;
-                        if (spawn.label != null) {
-                            spawn.x += (offsetMap.get(spawn.label) ?? 0) * maxWidth;
+                        if (spawn.groupLabel != null) {
+                            spawn.x += (offsetMap.get(spawn.groupLabel) ?? 0) * maxWidth;
                         }
 
                         return spawn;

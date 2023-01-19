@@ -36,9 +36,9 @@ export default <RoomPlugin<
             room.objectContextMenuPlugin = {
                 menu,
                 menuOptions: new Map(Object.entries({
-                    "move and stack ✋": (ids) => {
+                    "collect + stack ✋": (ids) => {
                         const status = document.createElement("h3");
-                        status.textContent = "left-click to move selected group.";
+                        status.textContent = "left-click to place selected group.";
                         room.infoWindowPlugin.element.prepend(status);
 
                         window.addEventListener("mouseup", function moveObjects({ button }) {
