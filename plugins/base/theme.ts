@@ -34,10 +34,10 @@ export default <RoomPlugin>{
           background-color: #87556F;
         }
 
-        input {
+        input, textarea {
           border-radius: 4px;
           background: #59405C;
-        } input:focus {
+        } input:focus, textarea:focus {
           outline: 1px solid #87556F;
         }
         `;
