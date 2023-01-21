@@ -2,7 +2,7 @@ import type { RoomPlugin } from "types";
 
 const PLUGINS_KEY = "pluginUrls";
 
-let editorWindow: HTMLElement;
+let editorWindow: HTMLTextAreaElement;
 
 export default <RoomPlugin>{
     name: "pluginManager",
@@ -18,8 +18,8 @@ export default <RoomPlugin>{
             editorWindow.style.transition = "ease 400ms";
             editorWindow.style.marginBottom = marginOffset;
 
-            editorWindow.textContent = sessionStorage.getItem(PLUGINS_KEY) ?? "";
-            editorWindow.oninput = () => sessionStorage.setItem(PLUGINS_KEY, editorWindow.textContent ?? "");
+            editorWindow.value = sessionStorage.getItem(PLUGINS_KEY) ?? "";
+            editorWindow.oninput = () => sessionStorage.setItem(PLUGINS_KEY, editorWindow.value ?? "");
 
             document.body.appendChild(editorWindow);
 
