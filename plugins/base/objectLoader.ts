@@ -116,9 +116,11 @@ Array<{
         deleteButton.innerText = "💣 Clear Objects";
         deleteButton.style.padding = "0.5rem 0.8rem";
         deleteButton.onclick = () => {
-            for (const idKey in room.objects) {
-                const id = parseInt(idKey);
-                room.objectPropertiesPlugin.deleteObject(id, true);
+            if (confirm("are you sure?")) {
+                for (const idKey in room.objects) {
+                    const id = parseInt(idKey);
+                    room.objectPropertiesPlugin.deleteObject(id, true);
+                }
             }
         };
 
