@@ -53,7 +53,7 @@ export default <RoomPlugin<object>>{
                 </ul>
 
                 Lots of things may change as it's still very much a work in progress,
-                so don't be surprised by the amoung of bugs and bad UI design choices :)
+                so don't be surprised by the amount of bugs and bad UI design choices :)
 
                 <br/> <br/>
 
