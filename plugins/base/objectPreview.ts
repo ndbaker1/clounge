@@ -89,6 +89,7 @@ export default <RoomPlugin<
                     text.textContent = index.toString();
 
                     const image = document.createElement("img");
+                    image.alt = id.toString();
                     image.src = room.objects[id].descriptors.currentImg ?? "";
                     image.setAttribute(<OBJECT_ID_ATTRIBUTE>"object-id", id.toString());
                     image.width = 80;

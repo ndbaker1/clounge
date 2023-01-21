@@ -121,6 +121,7 @@ export default <RoomPlugin<
             room.viewportAnchorPlugin.elementRef.appendChild(objectContainer);
 
             zoomedElement = document.createElement("img");
+            zoomedElement.alt = "zoomed preview";
             zoomedElement.style.position = "fixed";
             zoomedElement.style.top = "10vh";
             zoomedElement.style.left = "50%";
@@ -152,6 +153,7 @@ export default <RoomPlugin<
                     };
 
                     const element = document.createElement("img");
+                    element.alt = descriptors.id.toString();
                     element.setAttribute(<OBJECT_ID_ATTRIBUTE>"object-id", descriptors.id.toString());
                     element.style.position = "absolute";
 

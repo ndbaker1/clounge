@@ -78,6 +78,7 @@ export default <RoomPlugin<CursorPeerExtension, CursorRoomExtension & ViewportAn
 
                 cursorElement.className = "cursor";
                 cursorElement.style.left = cursorImage.style.top = "-99px";
+                cursorImage.alt = "cursor";
                 cursorImage.src = pointImage;
                 cursorImage.width = 16;
 
