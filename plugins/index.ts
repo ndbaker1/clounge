@@ -1,5 +1,4 @@
 import type { RoomPlugin } from "types";
-import helpWindow from "./base/helpWindow";
 import infoWindow from "./base/infoWindow";
 import names from "./base/names";
 import objectContextMenu from "./base/objectContextMenu";
@@ -14,6 +13,7 @@ import pluginManager from "./base/pluginManager";
 import roomSharing from "./base/roomSharing";
 import theme from "./base/theme";
 import viewportAnchor from "./base/viewportAnchor";
+import introDialogue from "./base/introDialogue";
 
 export class PluginManager {
     /**
@@ -30,7 +30,7 @@ export class PluginManager {
         const plugins = [
             viewportAnchor,
             infoWindow,
-            helpWindow,
+            introDialogue,
             objectContextMenu,
             names,
             peerCursors,
