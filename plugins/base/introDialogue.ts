@@ -14,7 +14,7 @@ export default <RoomPlugin>{
         introWindow.style.maxHeight = "90vh";
         introWindow.style.overflow = "auto";
 
-        const dialogue = document.createElement("small");
+        const dialogue = document.createElement("p");
         dialogue.innerHTML = `
             <h3>Welcome to 🧂 <u>tablesalt</u>, a peer-to-peer tabletop.</h3>
 
@@ -35,7 +35,7 @@ export default <RoomPlugin>{
 
             <br/> <br/>
 
-            Once objects are loaded into the room you can drag them around and right-click to perform additional actions.
+            Once objects are loaded into the room you can <kbd>left-click</kbd> to drag them around and <kbd>right-click</kbd> to perform additional actions.
             There are some default controls and shortcuts built-in already, such as:
 
             <ul>
@@ -43,7 +43,7 @@ export default <RoomPlugin>{
                 <li>hover an object and press <kbd>f</kbd> to flip it over</li>
                 <li>hover an object and press <kbd>space</kbd> to view a close-up of it</li>
                 <li>hover over objects and press <kbd>ctrl</kbd> + <kbd>left-click</kbd> to open up the preview menu</li>
-                <li>hold <kbd>shift</kbd> and drag to move every object under the cursor</li>
+                <li>hold <kbd>shift</kbd> + <kbd>left-click</kbd> and drag to move every object under the cursor</li>
             </ul>
 
             Lots of things may change as it's still very much a work in progress,
