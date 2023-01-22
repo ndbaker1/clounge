@@ -8,7 +8,7 @@ export default <RoomPlugin>{
     name: "pluginManager",
     initialize() {
         if (typeof window !== "undefined") {
-            const marginOffset = "-50%";
+            const marginOffset = "-100%";
 
             editorWindow = document.createElement("textarea");
             editorWindow.style.position = "fixed";
