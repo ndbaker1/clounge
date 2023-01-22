@@ -18,7 +18,7 @@ Follow the above link to find out how to build a javascript plugin module, and t
     *follow proper standard JSON formatting or the plugins may not load.*
     
 3. Press <kbd>shift</kbd> + <kbd>?</kbd> again to hide the editor
-
+4. Reload the page to ensure the plugins were loaded (may have a menu in the future for runtime loading/unloading)
 #### Example
 
 ![aa](https://user-images.githubusercontent.com/48701178/213885300-17635811-17da-46bb-ab9f-6c1f193a707e.png)
