@@ -14,6 +14,7 @@ import roomSharing from "./base/roomSharing";
 import theme from "./base/theme";
 import viewportAnchor from "./base/viewportAnchor";
 import introDialogue from "./base/introDialogue";
+import presetLoader from "./addons/presetLoader";
 
 export class PluginManager {
     /**
@@ -40,6 +41,7 @@ export class PluginManager {
             objectSnapping,
             peerSpectate,
             peerRelaying,
+            presetLoader,
             pluginManager,
             roomSharing,
             theme,

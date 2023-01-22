@@ -11,7 +11,7 @@ export default <RoomPlugin>{
         introWindow.style.display = "grid";
         introWindow.style.gap = "1rem";
 
-        introWindow.style.maxHeight = "90vh";
+        introWindow.style.maxHeight = "80vh";
         introWindow.style.overflow = "auto";
 
         const dialogue = document.createElement("p");

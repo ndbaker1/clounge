@@ -1,6 +1,9 @@
 import type { RoomPlugin } from "types";
 import type { ObjectDescriptors, ObjectMessage, ObjectPropertiesObjectExtension, ObjectPropertiesRoomExtension } from "./objectProperties";
 
+// local libs
+import objectProperties from "./objectProperties";
+
 /**
  * Expected type of JSON payload describing object properties, instance number, and sorting label.
  * 
@@ -31,15 +34,58 @@ export type ObjectLoadDescriptor = Partial<ObjectDescriptors["descriptors"] & {
     groupLabel: string;
 }>;
 
-// local libs
-import objectProperties from "./objectProperties";
+export type ObjectLoaderRoomExtension = {
+    objectLoaderPlugin: {
+        loadObjectDescriptors: (descriptors: ObjectLoadDescriptor[]) => void;
+    }
+}
 
 let actionContainer: HTMLElement;
 
-export default <RoomPlugin<object, ObjectPropertiesRoomExtension, ObjectPropertiesObjectExtension>>{
+export default <RoomPlugin<object, ObjectLoaderRoomExtension & ObjectPropertiesRoomExtension, ObjectPropertiesObjectExtension>>{
     name: "objectLoader",
     dependencies: [objectProperties.name],
     initialize(room) {
+        // ROOM DATA INITIALIZED
+        room.objectLoaderPlugin = {
+            loadObjectDescriptors(descriptors: ObjectLoadDescriptor[]) {
+                let maxWidth = 0;
+                let offsetCounter = 0;
+                const offsetMap = new Map<string, number>();
+
+                descriptors
+                    .map((spawn) => {
+                        if (spawn.groupLabel != null) {
+                            if (!offsetMap.has(spawn.groupLabel)) {
+                                offsetMap.set(spawn.groupLabel, offsetCounter++);
+                            }
+
+                            maxWidth = Math.max(maxWidth, spawn.width ?? 200);
+                        }
+
+                        return spawn;
+                    })
+                    .map((spawn) => {
+                        if (spawn.x == null) spawn.x = window.innerWidth / 2;
+                        if (spawn.groupLabel != null) {
+                            spawn.x += (offsetMap.get(spawn.groupLabel) ?? 0) * maxWidth;
+                        }
+
+                        return spawn;
+                    })
+                    .forEach((spawn) => {
+                        for (let i = 0; i < (spawn.count ?? 1); i++) {
+                            const descriptors = room.objects[room.objectPropertiesPlugin.spawnObject(spawn)].descriptors;
+
+                            const message: ObjectMessage = { type: "object_spawn", descriptors };
+                            for (const id in room.peers) {
+                                room.peers[id].connection.send<ObjectMessage>(message);
+                            }
+                        }
+                    });
+            }
+        };
+
         // button that allows you to bulk load using a formatted json
         actionContainer = document.createElement("div");
         actionContainer.style.position = "fixed";
@@ -72,40 +118,7 @@ Array<{
                     `) ?? ""
                 );
 
-                let maxWidth = 0;
-                let offsetCounter = 0;
-                const offsetMap = new Map<string, number>();
-
-                loadRequest
-                    .map((spawn) => {
-                        if (spawn.groupLabel != null) {
-                            if (!offsetMap.has(spawn.groupLabel)) {
-                                offsetMap.set(spawn.groupLabel, offsetCounter++);
-                            }
-
-                            maxWidth = Math.max(maxWidth, spawn.width ?? 200);
-                        }
-
-                        return spawn;
-                    })
-                    .map((spawn) => {
-                        if (spawn.x == null) spawn.x = window.innerWidth / 2;
-                        if (spawn.groupLabel != null) {
-                            spawn.x += (offsetMap.get(spawn.groupLabel) ?? 0) * maxWidth;
-                        }
-
-                        return spawn;
-                    })
-                    .forEach((spawn) => {
-                        for (let i = 0; i < (spawn.count ?? 1); i++) {
-                            const descriptors = room.objects[room.objectPropertiesPlugin.spawnObject(spawn)].descriptors;
-
-                            const message: ObjectMessage = { type: "object_spawn", descriptors };
-                            for (const id in room.peers) {
-                                room.peers[id].connection.send<ObjectMessage>(message);
-                            }
-                        }
-                    });
+                room.objectLoaderPlugin.loadObjectDescriptors(loadRequest);
             } catch (e) {
                 // Eh...
                 console.error("encountered issue loading an object.", e);
