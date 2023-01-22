@@ -48,9 +48,8 @@ export default <RoomPlugin<
                 previewContainer.style.borderRadius = "5px";
                 previewContainer.style.backgroundColor = "#322F3D";
                 previewContainer.style.boxShadow = "black 1px 4px 12px";
-                previewContainer.style.top = "10vh";
-                previewContainer.style.left = "50%";
-                previewContainer.style.transform = "translateX(-50%)";
+                previewContainer.style.top = previewContainer.style.left = "50%";
+                previewContainer.style.transform = "translate(-50%, -50%)";
 
                 const buttonContainer = document.createElement("div");
                 buttonContainer.style.display = "grid";

@@ -1,22 +1,22 @@
 import type { RoomPlugin } from "types";
 
 export default <RoomPlugin>{
-    name: "helpWindow",
+    name: "introDialogue",
     initialize() {
         // Add a help window for people opening the app for the first time
         const introWindow = document.createElement("div");
         introWindow.style.position = "fixed";
-        introWindow.style.left = "50%";
-        introWindow.style.top = "10em";
-        introWindow.style.transform = "translate(-50%)";
+        introWindow.style.left = introWindow.style.top = "50%";
+        introWindow.style.transform = "translate(-50%, -50%)";
         introWindow.style.display = "grid";
         introWindow.style.gap = "1rem";
 
+        introWindow.style.maxHeight = "90vh";
+        introWindow.style.overflow = "auto";
+
         const dialogue = document.createElement("small");
         dialogue.innerHTML = `
-            Welcome to 🧂 <u>tablesalt</u>, a peer-to-peer tabletop.
-
-            <br/> <br/>
+            <h3>Welcome to 🧂 <u>tablesalt</u>, a peer-to-peer tabletop.</h3>
 
             The first thing you'll probably want to do is share your room with others.  
             Click the "Share Lobby" button in the top-right and then send the link to your friends!
@@ -39,11 +39,11 @@ export default <RoomPlugin>{
             There are some default controls and shortcuts built-in already, such as:
 
             <ul>
-                <li>middle-click and drag to pan around</li>
-                <li>hover an object and press "f" to flip it over</li>
-                <li>hover an object and press "space" to view a close-up of it</li>
-                <li>hover over objects and press "ctrl" + left-click to open up the preview menu</li>
-                <li>hold shift and drag to move every object under the cursor</li>
+                <li>hold <kbd>middle-click</kbd> and drag to pan around</li>
+                <li>hover an object and press <kbd>f</kbd> to flip it over</li>
+                <li>hover an object and press <kbd>space</kbd> to view a close-up of it</li>
+                <li>hover over objects and press <kbd>ctrl</kbd> + <kbd>left-click</kbd> to open up the preview menu</li>
+                <li>hold <kbd>shift</kbd> and drag to move every object under the cursor</li>
             </ul>
 
             Lots of things may change as it's still very much a work in progress,
