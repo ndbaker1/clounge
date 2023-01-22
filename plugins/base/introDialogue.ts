@@ -24,8 +24,8 @@ export default <RoomPlugin>{
 
             <br/> <br/>
 
-            In order to load objects into the room, press the "Load Objects" button in the top-right.
-            It will prompt you for a descriptor JSON, which is going to be an array of objects with required and optional properties.
+            In order to load objects into the room, try out a preset or press the "Load Objects" button in the top-right.
+            Manually loading objects will prompt you for a descriptor JSON, which is an array of objects with required and optional properties.
             It may help to visit the
             <a
                 href="https://github.com/ndbaker1/tablesalt/blob/main/plugins/base/objectLoader.ts#L10"
