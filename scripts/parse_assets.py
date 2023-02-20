@@ -1,4 +1,9 @@
-"""ObjectLoadDescriptor JSON Generator for URL based asset loading"""
+"""ObjectLoadDescriptor JSON Generator for URL based asset loading
+
+you might run this script using:
+bash -c "python <(curl URL_OF_THIS_FILE)"
+"""
+
 
 if __name__ == "__main__":
     print("this scripts generates a JSON for the tablesalt importer.")
