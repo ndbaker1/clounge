@@ -83,7 +83,7 @@ export default <RoomPlugin<object, ObjectLoaderRoomExtension & ObjectPropertiesR
                             }
                         }
                     });
-            }
+            },
         };
 
         // button that allows you to bulk load using a formatted json
@@ -99,29 +99,28 @@ export default <RoomPlugin<object, ObjectLoaderRoomExtension & ObjectPropertiesR
         uploadButton.innerText = "📷 Load Objects";
         uploadButton.style.padding = "0.5rem 0.8rem";
         uploadButton.onclick = async () => {
-            try {
-                const loadRequest: ObjectLoadDescriptor[] = JSON.parse(
-                    prompt(`
-Hope you understand typescript notation.
-Please enter a json string of the type: 
-Array<{
-    id: number;
-    width?: number;
-    height?: number;
-    currentImg?: string;
-    frontImg: string;
-    backImg: string;
-    rotationDeg: number;
-    draggable?: boolean;
-    count?: number;
-}>
-                    `) ?? ""
-                );
+            const descriptorInput = prompt("Enter a Descriptor URL or JSON.\nIf you are supporting JSON, please refer to the [ObjectLoadDescriptor] type in the source code.") ?? "";
 
-                room.objectLoaderPlugin.loadObjectDescriptors(loadRequest);
-            } catch (e) {
-                // Eh...
-                console.error("encountered issue loading an object.", e);
+            // check url or json
+            if (descriptorInput.startsWith("http")) {
+                // prefix all image names with the stored url (which prepend the same name)
+                (async () => {
+                    const metaDescriptors: ObjectLoadDescriptor[] = await (await fetch(descriptorInput + "/descriptors.json")).json();
+                    const expandedDescriptors = metaDescriptors.map(descriptor => {
+                        if (descriptor.backImg != null) { descriptor.backImg = descriptorInput + "/" + descriptor.backImg; }
+                        if (descriptor.frontImg != null) { descriptor.frontImg = descriptorInput + "/" + descriptor.frontImg; }
+                        return descriptor;
+                    });
+                    room.objectLoaderPlugin.loadObjectDescriptors(expandedDescriptors);
+                })();
+            } else {
+                try {
+                    const loadRequest: ObjectLoadDescriptor[] = JSON.parse(descriptorInput);
+                    room.objectLoaderPlugin.loadObjectDescriptors(loadRequest);
+                } catch (e) {
+                    // Eh...
+                    console.error("encountered issue loading an object.", e);
+                }
             }
         };
 
