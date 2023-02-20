@@ -99,24 +99,23 @@ export default <RoomPlugin<object, ObjectLoaderRoomExtension & ObjectPropertiesR
         uploadButton.innerText = "📷 Load Objects";
         uploadButton.style.padding = "0.5rem 0.8rem";
         uploadButton.onclick = async () => {
-            const descriptor = prompt("Enter a Descriptor URL or JSON.\nIf you are supporting JSON, please refer to the [ObjectLoadDescriptor] type in the source code.") ?? "";
+            const descriptorInput = prompt("Enter a Descriptor URL or JSON.\nIf you are supporting JSON, please refer to the [ObjectLoadDescriptor] type in the source code.") ?? "";
 
             // check url or json
-            if (descriptor.startsWith("http")) {
-                alert(descriptor);
+            if (descriptorInput.startsWith("http")) {
                 // prefix all image names with the stored url (which prepend the same name)
                 (async () => {
-                    const metaDescriptors: ObjectLoadDescriptor[] = await (await fetch(descriptor + "/descriptors.json")).json();
+                    const metaDescriptors: ObjectLoadDescriptor[] = await (await fetch(descriptorInput + "/descriptors.json")).json();
                     const expandedDescriptors = metaDescriptors.map(descriptor => {
-                        if (descriptor.backImg != null) { descriptor.backImg = descriptor + "/" + descriptor.backImg; }
-                        if (descriptor.frontImg != null) { descriptor.frontImg = descriptor + "/" + descriptor.frontImg; }
+                        if (descriptor.backImg != null) { descriptor.backImg = descriptorInput + "/" + descriptor.backImg; }
+                        if (descriptor.frontImg != null) { descriptor.frontImg = descriptorInput + "/" + descriptor.frontImg; }
                         return descriptor;
                     });
                     room.objectLoaderPlugin.loadObjectDescriptors(expandedDescriptors);
                 })();
             } else {
                 try {
-                    const loadRequest: ObjectLoadDescriptor[] = JSON.parse(descriptor);
+                    const loadRequest: ObjectLoadDescriptor[] = JSON.parse(descriptorInput);
                     room.objectLoaderPlugin.loadObjectDescriptors(loadRequest);
                 } catch (e) {
                     // Eh...
