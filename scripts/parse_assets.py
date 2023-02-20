@@ -17,6 +17,7 @@ if __name__ == "__main__":
         for group_image in [
                 g.name for g in os.scandir(os.path.join(path, group))
                 if g.is_file() and not g.name.startswith(".")
+                and not g.name.endswith(".json")
         ]:
             full_path = os.path.join(group, group_image)
             descriptors.append({
