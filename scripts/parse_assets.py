@@ -15,7 +15,7 @@ if __name__ == "__main__":
     descriptors = []
 
     for group in [d.name for d in os.scandir(path) if d.is_dir()]:
-        for group_image in [g for g in os.listdir(group) if not g.startswith(".")]:
+        for group_image in [g for g in os.listdir(os.path.join(path, group)) if not g.startswith(".")]:
             full_path = os.path.join(group, group_image)
             descriptors.append(
                 {
@@ -32,6 +32,13 @@ if __name__ == "__main__":
                 "frontImg": image,
             }
         )
+
+    back_image = next((x for x in descriptors if x["frontImg"].startswith("back")), None)
+
+    if back_image is not None:
+        descriptors.remove(back_image)
+        for descriptor in descriptors:
+            descriptor["backImg"] = back_image["frontImg"]
 
     print("========== saved to descriptors.json ==========")
     print(json.dumps(descriptors, indent=4))
