@@ -5,13 +5,12 @@ export default <RoomPlugin>{
     initialize() {
         // Add a help window for people opening the app for the first time
         const introWindow = document.createElement("div");
-        introWindow.style.position = "fixed";
-        introWindow.style.left = introWindow.style.top = "50%";
-        introWindow.style.transform = "translate(-50%, -50%)";
+
+        introWindow.style.margin = "auto";
+        introWindow.style.maxWidth = "min(1000px, 90vw)";
+        introWindow.style.maxHeight = "min(100rem, 70vh)";
         introWindow.style.display = "grid";
         introWindow.style.gap = "1rem";
-
-        introWindow.style.maxHeight = "80vh";
         introWindow.style.overflow = "auto";
 
         const dialogue = document.createElement("p");
