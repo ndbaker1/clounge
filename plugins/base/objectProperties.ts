@@ -6,6 +6,7 @@ import type { ViewportRoomExtension } from "./viewport";
 // local libs
 import peerCursors from "./peerCursors";
 import viewport from "./viewport";
+import { MOUSE_BUTTON } from "../common";
 
 // Object Data should only ever be fields, no functions, classes,
 // or anything that is not obviously serializable.
@@ -298,8 +299,7 @@ export default <RoomPlugin<
             };
 
             window.addEventListener("mousedown", ({ shiftKey, button }) => {
-                // button == 0 means left click
-                if (shiftKey && button === 0) {
+                if (shiftKey && button === MOUSE_BUTTON.LEFT) {
                     const ids = room.objectPropertiesPlugin.getObjectIdsUnderCursor();
                     const status = document.createElement("h3");
                     status.textContent = "release where you want to move the group.";
@@ -308,7 +308,7 @@ export default <RoomPlugin<
                     const startPosition = Object.assign({}, room.self.cursorWorld);
 
                     window.addEventListener("mouseup", function moveObjects({ button }) {
-                        if (button === 0) { // left click
+                        if (button === MOUSE_BUTTON.LEFT) {
                             const delta = {
                                 x: room.self.cursorWorld.x - startPosition.x,
                                 y: room.self.cursorWorld.y - startPosition.y,
@@ -323,7 +323,7 @@ export default <RoomPlugin<
                             window.removeEventListener("mouseup", moveObjects);
                         }
                     });
-                } else if (button === 0) {
+                } else if (button === MOUSE_BUTTON.LEFT) {
                     const hoveredElement = document.elementFromPoint(room.self.cursorScreen.x, room.self.cursorScreen.y);
                     const elementIdString = hoveredElement?.getAttribute(<OBJECT_ID_ATTRIBUTE>"object-id");
                     if (elementIdString != null) {
@@ -335,7 +335,7 @@ export default <RoomPlugin<
             });
 
             window.addEventListener("mouseup", ({ button }) => {
-                if (button === 0) {
+                if (button === MOUSE_BUTTON.LEFT) {
                     room.objectPropertiesPlugin.selectedObjectId = 0;
                 }
             });

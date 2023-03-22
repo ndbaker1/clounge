@@ -13,9 +13,10 @@ import pluginManager from "./base/pluginManager";
 import roomSharing from "./base/roomSharing";
 import theme from "./base/theme";
 import viewport from "./base/viewport";
-import introDialogue from "./base/introDialogue";
+import introDialogue from "./addons/introDialogue";
 import presetLoader from "./addons/presetLoader";
 import panning from "./base/panning";
+import userEvents from "./base/userEvents";
 
 export class PluginManager {
     /**
@@ -47,6 +48,7 @@ export class PluginManager {
             roomSharing,
             theme,
             panning,
+            userEvents,
         ];
 
         if (externalPlugins.length > 0) {

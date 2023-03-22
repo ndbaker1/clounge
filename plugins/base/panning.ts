@@ -5,6 +5,7 @@ import type { InfoWindowRoomExtension } from "./infoWindow";
 
 import infoWindow from "./infoWindow";
 import objectProperties from "./objectProperties";
+import { MOUSE_BUTTON } from "../common";
 
 let anchorCoordinateElement: HTMLElement;
 
@@ -20,8 +21,14 @@ export default <RoomPlugin<object, ViewportRoomExtension & InfoWindowRoomExtensi
         room.infoWindowPlugin.element.prepend(anchorCoordinateElement);
 
         window.addEventListener("mousedown", ({ button }) => {
-            if (button === 1 || room.objectPropertiesPlugin.getObjectIdsUnderCursor().length == 0) panning = true;
+            if (
+                button == MOUSE_BUTTON.MIDDLE ||
+                room.objectPropertiesPlugin.getObjectIdsUnderCursor().length == 0
+            ) {
+                panning = true;
+            }
         });
+
         window.addEventListener("mouseup", () => {
             panning = false;
         });

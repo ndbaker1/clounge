@@ -6,6 +6,7 @@ import type { ViewportRoomExtension } from "./viewport";
 import objectProperties from "./objectProperties";
 import objectContextMenu from "./objectContextMenu";
 import viewport from "./viewport";
+import { MOUSE_BUTTON } from "../common";
 
 const CONSTANTS = {
     exitKey: "Escape",
@@ -110,7 +111,7 @@ export default <RoomPlugin<
             room.objectContextMenuPlugin.menuOptions.set("preview 👀", openPreview);
 
             window.addEventListener("mousedown", ({ ctrlKey, button }) => {
-                if (ctrlKey && button === 0) {
+                if (ctrlKey && button === MOUSE_BUTTON.LEFT) {
                     const selectedIds = room.objectPropertiesPlugin.getObjectIdsUnderCursor();
                     if (selectedIds.length > 0 && !previewOpen) {
                         openPreview(selectedIds);

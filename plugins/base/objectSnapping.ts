@@ -6,6 +6,7 @@ import type { ObjectContextMenuRoomExtension } from "./objectContextMenu";
 import peerCursors from "./peerCursors";
 import objectProperties from "./objectProperties";
 import objectContextMenu from "./objectContextMenu";
+import { MOUSE_BUTTON } from "../common";
 
 export type ObjectSnappingObjectExtension = ObjectDescriptors<{
     snap?: boolean,
@@ -34,7 +35,7 @@ export default <RoomPlugin<
             })));
 
             window.addEventListener("mouseup", ({ button }) => {
-                if (button === 0) { // left button up after drag
+                if (button === MOUSE_BUTTON.LEFT) {
                     const hoveredObjectIds = room.objectPropertiesPlugin.getObjectIdsUnderCursor();
                     const [topId, stackId] = [hoveredObjectIds.shift(), hoveredObjectIds.shift()];
 

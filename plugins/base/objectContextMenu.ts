@@ -1,3 +1,4 @@
+import { MOUSE_BUTTON } from "../common";
 import type { RoomPlugin } from "types";
 
 import type { ObjectPropertiesObjectExtension, ObjectPropertiesRoomExtension } from "./objectProperties";
@@ -42,7 +43,7 @@ export default <RoomPlugin<
                         room.infoWindowPlugin.element.prepend(status);
 
                         window.addEventListener("mouseup", function moveObjects({ button }) {
-                            if (button === 0) { // left click
+                            if (button === MOUSE_BUTTON.LEFT) {
                                 for (const id of ids) {
                                     room.objectPropertiesPlugin.setObjectPosition(id, room.self.cursorWorld, true);
                                 }
@@ -112,7 +113,7 @@ export default <RoomPlugin<
                         room.infoWindowPlugin.element.prepend(status);
 
                         window.addEventListener("mousedown", function moveObjects({ button }) {
-                            if (button === 0) { // left click
+                            if (button === MOUSE_BUTTON.LEFT) { // left click
                                 const selectedObjectIds = room.objectPropertiesPlugin.getObjectIdsUnderCursor();
                                 for (const selectedId of selectedObjectIds) {
                                     room.objectPropertiesPlugin.placeRelative(selectedId, id, "after", true);
