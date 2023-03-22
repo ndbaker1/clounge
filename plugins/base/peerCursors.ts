@@ -1,10 +1,11 @@
 import type { Message, PeerID, RoomPlugin, Vector2D } from "types";
 
 import type { SyncMessage, NamePeerExtension } from "./names";
-import type { ViewportAnchorRoomExtension } from "./viewportAnchor";
+import type { ViewportRoomExtension } from "./viewport";
+import type { InfoWindowRoomExtension } from "./infoWindow";
 
-import namePlugin from "./names";
-import viewportAnchorPlugin from "./viewportAnchor";
+import names from "./names";
+import viewport from "./viewport";
 import infoWindow from "./infoWindow";
 
 export type MouseMessage =
@@ -46,9 +47,9 @@ const pointImage = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADEAAABKCAYAAA
 
 let mouseCoordinateElement: HTMLElement;
 
-export default <RoomPlugin<CursorPeerExtension, CursorRoomExtension & ViewportAnchorRoomExtension>>{
+export default <RoomPlugin<CursorPeerExtension, CursorRoomExtension & ViewportRoomExtension & InfoWindowRoomExtension>>{
     name: "peerCursors",
-    dependencies: [viewportAnchorPlugin.name, namePlugin.name, infoWindow.name],
+    dependencies: [viewport.name, names.name, infoWindow.name],
     processMessage(room, data: MouseMessage | SyncMessage, peerId) {
         if (data?.type === "identification") {
             room.peers[peerId].nameElement.innerHTML = data.name;
@@ -63,7 +64,7 @@ export default <RoomPlugin<CursorPeerExtension, CursorRoomExtension & ViewportAn
         const cursorContainer = document.createElement("div");
         cursorContainer.style.position = "relative";
         cursorContainer.style.zIndex = String(9999);
-        room.viewportAnchorPlugin.elementRef.appendChild(cursorContainer);
+        room.viewportPlugin.elementRef.appendChild(cursorContainer);
 
         mouseCoordinateElement = document.createElement("small");
         room.infoWindowPlugin.element.prepend(mouseCoordinateElement);
@@ -98,8 +99,8 @@ export default <RoomPlugin<CursorPeerExtension, CursorRoomExtension & ViewportAn
                 const ref = isSelf ? room.self : room.peers[id];
 
                 ref.cursorWorld = {
-                    x: x - (isSelf ? room.viewportAnchorPlugin.position.x : 0),
-                    y: y - (isSelf ? room.viewportAnchorPlugin.position.y : 0),
+                    x: x - (isSelf ? room.viewportPlugin.position.x : 0),
+                    y: y - (isSelf ? room.viewportPlugin.position.y : 0),
                 };
                 if (isSelf) {
                     ref.cursorScreen = { x, y };

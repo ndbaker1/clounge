@@ -2,9 +2,9 @@ import type { RoomPlugin } from "types";
 
 import type { ObjectPropertiesObjectExtension, ObjectPropertiesRoomExtension } from "./objectProperties";
 import type { CursorPeerExtension } from "./peerCursors";
-import type { ViewportAnchorRoomExtension } from "./viewportAnchor";
+import type { ViewportRoomExtension } from "./viewport";
 
-import viewportAnchor from "./viewportAnchor";
+import viewport from "./viewport";
 
 type ContextOptionsMap = Map<string, ContextOptionsMap | ContextOptionHandler>;
 type ContextOptionHandler = (objectIds: number[]) => void;
@@ -18,19 +18,19 @@ export type ObjectContextMenuRoomExtension = {
 
 export default <RoomPlugin<
     CursorPeerExtension,
-    ObjectContextMenuRoomExtension & ViewportAnchorRoomExtension & ObjectPropertiesRoomExtension,
+    ObjectContextMenuRoomExtension & ViewportRoomExtension & ObjectPropertiesRoomExtension,
     ObjectPropertiesObjectExtension
 >
     >{
         name: "objectContextMenu",
-        dependencies: [viewportAnchor.name],
+        dependencies: [viewport.name],
         initialize(room) {
             const menu = document.createElement("div");
             menu.style.zIndex = String(999);
             menu.style.display = "none";
             menu.style.position = "fixed";
 
-            room.viewportAnchorPlugin.elementRef.appendChild(menu);
+            room.viewportPlugin.elementRef.appendChild(menu);
 
             // ROOM DATA INITIALIZED
             room.objectContextMenuPlugin = {

@@ -12,9 +12,10 @@ import peerSpectate from "./base/peerSpectate";
 import pluginManager from "./base/pluginManager";
 import roomSharing from "./base/roomSharing";
 import theme from "./base/theme";
-import viewportAnchor from "./base/viewportAnchor";
+import viewport from "./base/viewport";
 import introDialogue from "./base/introDialogue";
 import presetLoader from "./addons/presetLoader";
+import panning from "./base/panning";
 
 export class PluginManager {
     /**
@@ -29,7 +30,7 @@ export class PluginManager {
      */
     static async loadPlugins(externalPlugins: string[]): Promise<RoomPlugin[]> {
         const plugins = [
-            viewportAnchor,
+            viewport,
             infoWindow,
             introDialogue,
             objectContextMenu,
@@ -45,6 +46,7 @@ export class PluginManager {
             pluginManager,
             roomSharing,
             theme,
+            panning,
         ];
 
         if (externalPlugins.length > 0) {

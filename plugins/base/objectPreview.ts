@@ -1,11 +1,11 @@
 import type { RoomPlugin } from "types";
 import type { ObjectPropertiesObjectExtension, ObjectPropertiesRoomExtension, OBJECT_ID_ATTRIBUTE } from "./objectProperties";
 import type { ObjectContextMenuRoomExtension } from "./objectContextMenu";
-import type { ViewportAnchorRoomExtension } from "./viewportAnchor";
+import type { ViewportRoomExtension } from "./viewport";
 
 import objectProperties from "./objectProperties";
 import objectContextMenu from "./objectContextMenu";
-import viewportAnchor from "./viewportAnchor";
+import viewport from "./viewport";
 
 const CONSTANTS = {
     exitKey: "Escape",
@@ -14,12 +14,12 @@ const CONSTANTS = {
 
 export default <RoomPlugin<
     object,
-    ObjectPropertiesRoomExtension & ObjectContextMenuRoomExtension & ViewportAnchorRoomExtension,
+    ObjectPropertiesRoomExtension & ObjectContextMenuRoomExtension & ViewportRoomExtension,
     ObjectPropertiesObjectExtension
 >
     >{
         name: "objectPreview",
-        dependencies: [objectProperties.name, objectContextMenu.name, viewportAnchor.name],
+        dependencies: [objectProperties.name, objectContextMenu.name, viewport.name],
         initialize(room) {
             function openPreview(ids: number[]) {
                 function closeWindow() {
@@ -98,7 +98,7 @@ export default <RoomPlugin<
                     itemContainer.appendChild(objectPreview);
                 });
 
-                room.viewportAnchorPlugin.elementRef.appendChild(previewContainer);
+                room.viewportPlugin.elementRef.appendChild(previewContainer);
             }
 
             room.objectContextMenuPlugin.menuOptions.set("preview 👀", openPreview);

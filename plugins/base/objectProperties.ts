@@ -1,11 +1,11 @@
 import type { Message, RoomPlugin, Vector2D } from "types";
-
+import type { InfoWindowRoomExtension } from "./infoWindow";
 import type { CursorPeerExtension, CursorRoomExtension } from "./peerCursors";
-import type { ViewportAnchorRoomExtension } from "./viewportAnchor";
+import type { ViewportRoomExtension } from "./viewport";
 
 // local libs
-import cursorPlugin from "./peerCursors";
-import viewportAnchorPlugin from "./viewportAnchor";
+import peerCursors from "./peerCursors";
+import viewport from "./viewport";
 
 // Object Data should only ever be fields, no functions, classes,
 // or anything that is not obviously serializable.
@@ -58,7 +58,7 @@ export type ObjectPropertiesObjectExtension = ObjectDescriptors & {
     element: HTMLImageElement;
 };
 export type ObjectPropertiesPeerExtension = CursorPeerExtension;
-export type ObjectPropertiesRoomExtension = CursorRoomExtension & ViewportAnchorRoomExtension & {
+export type ObjectPropertiesRoomExtension = CursorRoomExtension & ViewportRoomExtension & InfoWindowRoomExtension & {
     objectPropertiesPlugin: {
         objectContainer: HTMLElement; // automatically keep track of the the next id to be created.
         currentId: number;
@@ -96,7 +96,7 @@ export default <RoomPlugin<
 >
     >{
         name: "objectProperties",
-        dependencies: [cursorPlugin.name, viewportAnchorPlugin.name],
+        dependencies: [peerCursors.name, viewport.name],
         processMessage(room, data: ObjectMessage) {
             if (data?.type === "object_position") {
                 room.objectPropertiesPlugin.setObjectPosition(data.id, data.position, false);
@@ -118,7 +118,7 @@ export default <RoomPlugin<
             objectContainer = document.createElement("div");
             objectContainer.style.position = "relative";
             objectContainer.style.zIndex = String(-1);
-            room.viewportAnchorPlugin.elementRef.appendChild(objectContainer);
+            room.viewportPlugin.elementRef.appendChild(objectContainer);
 
             zoomedElement = document.createElement("img");
             zoomedElement.alt = "zoomed preview";
@@ -128,7 +128,7 @@ export default <RoomPlugin<
             zoomedElement.style.transform = "translate(-50%)";
             zoomedElement.style.height = "80vh";
             zoomedElement.style.display = "none";
-            room.viewportAnchorPlugin.elementRef.appendChild(zoomedElement);
+            room.viewportPlugin.elementRef.appendChild(zoomedElement);
 
             // ROOM DATA INITIALIZED
             room.objectPropertiesPlugin = {

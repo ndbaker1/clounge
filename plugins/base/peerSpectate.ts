@@ -1,18 +1,18 @@
 import type { RoomPlugin, Vector2D } from "types";
 
 import type { NamePeerExtension, SyncMessage } from "./names";
-import type { ViewportAnchorRoomExtension } from "./viewportAnchor";
+import type { ViewportRoomExtension } from "./viewport";
 import type { CursorPeerExtension } from "./peerCursors";
 
-import namePlugin from "./names";
-import viewportAnchorPlugin from "./viewportAnchor";
+import names from "./names";
+import viewport from "./viewport";
 
 const savedLocation: Vector2D = { x: 0, y: 0 };
 let peerPointerContainer: HTMLElement;
 
-export default <RoomPlugin<NamePeerExtension & CursorPeerExtension, ViewportAnchorRoomExtension>>{
+export default <RoomPlugin<NamePeerExtension & CursorPeerExtension, ViewportRoomExtension>>{
     name: "peerSpectate",
-    dependencies: [viewportAnchorPlugin.name, namePlugin.name],
+    dependencies: [viewport.name, names.name],
     processMessage(room, data: SyncMessage, peerId) {
         if (data?.type === "identification") {
             const peerElement = peerPointerContainer.querySelector(`[peerId="${peerId}"]`);
@@ -25,10 +25,10 @@ export default <RoomPlugin<NamePeerExtension & CursorPeerExtension, ViewportAnch
                 peerPointer.textContent = "jump to " + room.peers[peerId].name;
                 peerPointer.setAttribute("peerId", peerId);
                 peerPointer.onclick = () => {
-                    savedLocation.x = room.viewportAnchorPlugin.position.x;
-                    savedLocation.y = room.viewportAnchorPlugin.position.y;
+                    savedLocation.x = room.viewportPlugin.position.x;
+                    savedLocation.y = room.viewportPlugin.position.y;
                     // everything negative because cursor is positioned based on anchor
-                    room.viewportAnchorPlugin.setPosition({
+                    room.viewportPlugin.setPosition({
                         x: -room.peers[peerId].cursorWorld.x + window.innerWidth / 2,
                         y: -room.peers[peerId].cursorWorld.y + window.innerHeight / 2,
                     });
@@ -48,10 +48,10 @@ export default <RoomPlugin<NamePeerExtension & CursorPeerExtension, ViewportAnch
 
         const selfPointer = createPointer();
         selfPointer.textContent = "jump to saved location";
-        selfPointer.onclick = () => room.viewportAnchorPlugin.setPosition(savedLocation);
+        selfPointer.onclick = () => room.viewportPlugin.setPosition(savedLocation);
         peerPointerContainer.appendChild(selfPointer);
 
-        room.viewportAnchorPlugin.elementRef.appendChild(peerPointerContainer);
+        room.viewportPlugin.elementRef.appendChild(peerPointerContainer);
     },
     handlePeerDisconnect(_, peerId) {
         peerPointerContainer.querySelector(`[peerId="${peerId}"]`)?.remove();
