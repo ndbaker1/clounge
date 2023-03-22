@@ -12,6 +12,8 @@ const CONSTANTS = {
     flipKey: "w",
 };
 
+let previewOpen = false;
+
 export default <RoomPlugin<
     object,
     ObjectPropertiesRoomExtension & ObjectContextMenuRoomExtension & ViewportRoomExtension,
@@ -22,10 +24,12 @@ export default <RoomPlugin<
         dependencies: [objectProperties.name, objectContextMenu.name, viewport.name],
         initialize(room) {
             function openPreview(ids: number[]) {
+                previewOpen = true;
                 function closeWindow() {
                     previewContainer.remove();
-                    window.removeEventListener("mouseup", closeWindow);
+                    previewOpen = false;
                 }
+
                 function flipPreview() {
                     itemContainer.querySelectorAll("img").forEach(previewItem => {
                         const id = parseInt(previewItem.getAttribute(<OBJECT_ID_ATTRIBUTE>"object-id") ?? "");
@@ -34,9 +38,11 @@ export default <RoomPlugin<
                             : room.objects[id].descriptors.backImg;
                     });
                 }
-                window.addEventListener("keyup", ({ key }) => {
+
+                window.addEventListener("keyup", function handleKeys({ key }) {
                     if (key === CONSTANTS.exitKey) {
                         closeWindow();
+                        window.removeEventListener("keyup", handleKeys);
                     } else if (key === CONSTANTS.flipKey) {
                         flipPreview();
                     }
@@ -106,7 +112,7 @@ export default <RoomPlugin<
             window.addEventListener("mousedown", ({ ctrlKey, button }) => {
                 if (ctrlKey && button === 0) {
                     const selectedIds = room.objectPropertiesPlugin.getObjectIdsUnderCursor();
-                    if (selectedIds.length > 0) {
+                    if (selectedIds.length > 0 && !previewOpen) {
                         openPreview(selectedIds);
                     }
 
