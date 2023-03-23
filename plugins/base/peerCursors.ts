@@ -142,8 +142,8 @@ export default <RoomPlugin<CursorPeerExtension, CursorRoomExtension & ViewportRo
                 user-select: none;
                 pointer-events: none;
 
-                margin-left: -12px;
-                margin-top: -8px;
+                margin-left: -5px;
+                margin-top: -5px;
 
                 align-items: center;
                 z-index: 99;

@@ -113,7 +113,7 @@ export default <RoomPlugin<
                         room.infoWindowPlugin.element.prepend(status);
 
                         window.addEventListener("mousedown", function moveObjects({ button }) {
-                            if (button === MOUSE_BUTTON.LEFT) { // left click
+                            if (button === MOUSE_BUTTON.LEFT) {
                                 const selectedObjectIds = room.objectPropertiesPlugin.getObjectIdsUnderCursor();
                                 for (const selectedId of selectedObjectIds) {
                                     room.objectPropertiesPlugin.placeRelative(selectedId, id, "after", true);
