@@ -2,6 +2,7 @@ import type { Message, RoomPlugin, Vector2D } from "types";
 import type { InfoWindowRoomExtension } from "./infoWindow";
 import type { CursorPeerExtension, CursorRoomExtension } from "./peerCursors";
 import type { ViewportRoomExtension } from "./viewport";
+import type { UserEventsRoomExtension } from "./userEvents";
 
 // local libs
 import peerCursors from "./peerCursors";
@@ -59,7 +60,7 @@ export type ObjectPropertiesObjectExtension = ObjectDescriptors & {
     element: HTMLImageElement;
 };
 export type ObjectPropertiesPeerExtension = CursorPeerExtension;
-export type ObjectPropertiesRoomExtension = CursorRoomExtension & ViewportRoomExtension & InfoWindowRoomExtension & {
+export type ObjectPropertiesRoomExtension = CursorRoomExtension & ViewportRoomExtension & InfoWindowRoomExtension & UserEventsRoomExtension & {
     objectPropertiesPlugin: {
         objectContainer: HTMLElement; // automatically keep track of the the next id to be created.
         currentId: number;
@@ -376,7 +377,11 @@ export default <RoomPlugin<
                 else if (key === CONSTANTS.zoomKey) {
                     const topId = room.objectPropertiesPlugin.getObjectIdsUnderCursor().shift();
                     if (topId != null) {
-                        zoomedElement.src = room.objects[topId].descriptors.currentImg ?? "";
+                        const [over, under] = room.objects[topId].descriptors.currentImg == room.objects[topId].descriptors.frontImg
+                            ? [room.objects[topId].descriptors.frontImg, room.objects[topId].descriptors.backImg]
+                            : [room.objects[topId].descriptors.backImg, room.objects[topId].descriptors.frontImg];
+
+                        zoomedElement.src = room.userEventsPlugin.getPressedKeys().has("w") ? under : over;
                         zoomedElement.style.display = "block";
                     }
                 }

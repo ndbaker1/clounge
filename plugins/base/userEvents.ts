@@ -1,7 +1,7 @@
 import type { RoomPlugin } from "types";
 
 export type UserEventsRoomExtension = {
-    keyEventsPlugin: {
+    userEventsPlugin: {
         getPressedKeys: () => Set<string>
         getPressedMouseButtons: () => Set<number>,
     }
@@ -37,7 +37,7 @@ export default <RoomPlugin<object, UserEventsRoomExtension>>{
             pressedMouseButtons.delete(button);
         });
 
-        room.keyEventsPlugin = {
+        room.userEventsPlugin = {
             getPressedKeys: () => pressedKeys,
             getPressedMouseButtons: () => pressedMouseButtons,
         };
