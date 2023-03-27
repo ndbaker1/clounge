@@ -324,10 +324,8 @@ export default <RoomPlugin<
                         }
                     });
                 } else if (button === 0) {
-                    const hoveredElement = document.elementFromPoint(room.self.cursorScreen.x, room.self.cursorScreen.y);
-                    const elementIdString = hoveredElement?.getAttribute(<OBJECT_ID_ATTRIBUTE>"object-id");
-                    if (elementIdString != null) {
-                        const elementId = parseInt(elementIdString);
+                    const elementId = room.objectPropertiesPlugin.getObjectIdsUnderCursor().shift();
+                    if (elementId != null) {
                         room.objectPropertiesPlugin.moveToFront(elementId, true);
                         room.objectPropertiesPlugin.selectedObjectId = elementId;
                     }
