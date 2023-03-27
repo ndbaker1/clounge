@@ -186,7 +186,6 @@ export default <RoomPlugin<
                     return descriptors.id;
                 },
                 setObjectRotation: (id, rotation, isSelf) => {
-                    if (room.objects[id].element == undefined) return;
                     room.objects[id].descriptors.rotationDeg = rotation;
                     room.objects[id].element.style.rotate = rotation + "deg";
 
