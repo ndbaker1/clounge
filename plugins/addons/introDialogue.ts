@@ -40,7 +40,7 @@ export default <RoomPlugin>{
             <ul>
                 <li>hold <kbd>middle-click</kbd> and drag to pan around</li>
                 <li>hover an object and press <kbd>f</kbd> to flip it over</li>
-                <li>hover an object and press <kbd>space</kbd> to view a close-up of it</li>
+                <li>hover an object and press <kbd>z</kbd> to view a close-up of it or <kbd>x</kbd> to view the same close-up flipped over</li>
                 <li>hover over objects and press <kbd>ctrl</kbd> + <kbd>left-click</kbd> to open up the preview menu</li>
                 <li>hold <kbd>shift</kbd> + <kbd>left-click</kbd> and drag to move every object under the cursor</li>
             </ul>

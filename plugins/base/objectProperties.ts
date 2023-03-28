@@ -1,11 +1,13 @@
 import type { Message, RoomPlugin, Vector2D } from "types";
-
+import type { InfoWindowRoomExtension } from "./infoWindow";
 import type { CursorPeerExtension, CursorRoomExtension } from "./peerCursors";
-import type { ViewportAnchorRoomExtension } from "./viewportAnchor";
+import type { ViewportRoomExtension } from "./viewport";
+import type { UserEventsRoomExtension } from "./userEvents";
 
 // local libs
-import cursorPlugin from "./peerCursors";
-import viewportAnchorPlugin from "./viewportAnchor";
+import peerCursors from "./peerCursors";
+import viewport from "./viewport";
+import { MOUSE_BUTTON } from "../common";
 
 // Object Data should only ever be fields, no functions, classes,
 // or anything that is not obviously serializable.
@@ -58,7 +60,7 @@ export type ObjectPropertiesObjectExtension = ObjectDescriptors & {
     element: HTMLImageElement;
 };
 export type ObjectPropertiesPeerExtension = CursorPeerExtension;
-export type ObjectPropertiesRoomExtension = CursorRoomExtension & ViewportAnchorRoomExtension & {
+export type ObjectPropertiesRoomExtension = CursorRoomExtension & ViewportRoomExtension & InfoWindowRoomExtension & UserEventsRoomExtension & {
     objectPropertiesPlugin: {
         objectContainer: HTMLElement; // automatically keep track of the the next id to be created.
         currentId: number;
@@ -83,7 +85,8 @@ export type OBJECT_ID_ATTRIBUTE = "object-id";
 
 const CONSTANTS = {
     flipKey: "f",
-    zoomKey: " ",
+    zoomKey: "z",
+    zoomFlipKey: "x",
 };
 
 let zoomedElement: HTMLImageElement;
@@ -96,7 +99,7 @@ export default <RoomPlugin<
 >
     >{
         name: "objectProperties",
-        dependencies: [cursorPlugin.name, viewportAnchorPlugin.name],
+        dependencies: [peerCursors.name, viewport.name],
         processMessage(room, data: ObjectMessage) {
             if (data?.type === "object_position") {
                 room.objectPropertiesPlugin.setObjectPosition(data.id, data.position, false);
@@ -118,7 +121,7 @@ export default <RoomPlugin<
             objectContainer = document.createElement("div");
             objectContainer.style.position = "relative";
             objectContainer.style.zIndex = String(-1);
-            room.viewportAnchorPlugin.elementRef.appendChild(objectContainer);
+            room.viewportPlugin.elementRef.appendChild(objectContainer);
 
             zoomedElement = document.createElement("img");
             zoomedElement.alt = "zoomed preview";
@@ -128,7 +131,7 @@ export default <RoomPlugin<
             zoomedElement.style.transform = "translate(-50%)";
             zoomedElement.style.height = "80vh";
             zoomedElement.style.display = "none";
-            room.viewportAnchorPlugin.elementRef.appendChild(zoomedElement);
+            room.viewportPlugin.elementRef.appendChild(zoomedElement);
 
             // ROOM DATA INITIALIZED
             room.objectPropertiesPlugin = {
@@ -184,7 +187,6 @@ export default <RoomPlugin<
                     return descriptors.id;
                 },
                 setObjectRotation: (id, rotation, isSelf) => {
-                    if (room.objects[id].element == undefined) return;
                     room.objects[id].descriptors.rotationDeg = rotation;
                     room.objects[id].element.style.rotate = rotation + "deg";
 
@@ -298,8 +300,7 @@ export default <RoomPlugin<
             };
 
             window.addEventListener("mousedown", ({ shiftKey, button }) => {
-                // button == 0 means left click
-                if (shiftKey && button === 0) {
+                if (shiftKey && button === MOUSE_BUTTON.LEFT) {
                     const ids = room.objectPropertiesPlugin.getObjectIdsUnderCursor();
                     const status = document.createElement("h3");
                     status.textContent = "release where you want to move the group.";
@@ -308,7 +309,7 @@ export default <RoomPlugin<
                     const startPosition = Object.assign({}, room.self.cursorWorld);
 
                     window.addEventListener("mouseup", function moveObjects({ button }) {
-                        if (button === 0) { // left click
+                        if (button === MOUSE_BUTTON.LEFT) {
                             const delta = {
                                 x: room.self.cursorWorld.x - startPosition.x,
                                 y: room.self.cursorWorld.y - startPosition.y,
@@ -323,7 +324,7 @@ export default <RoomPlugin<
                             window.removeEventListener("mouseup", moveObjects);
                         }
                     });
-                } else if (button === 0) {
+                } else if (button === MOUSE_BUTTON.LEFT) {
                     const hoveredElement = document.elementFromPoint(room.self.cursorScreen.x, room.self.cursorScreen.y);
                     const elementIdString = hoveredElement?.getAttribute(<OBJECT_ID_ATTRIBUTE>"object-id");
                     if (elementIdString != null) {
@@ -335,7 +336,7 @@ export default <RoomPlugin<
             });
 
             window.addEventListener("mouseup", ({ button }) => {
-                if (button === 0) {
+                if (button === MOUSE_BUTTON.LEFT) {
                     room.objectPropertiesPlugin.selectedObjectId = 0;
                 }
             });
@@ -373,17 +374,21 @@ export default <RoomPlugin<
                     }
                 }
                 // Zoomed Object Preview
-                else if (key === CONSTANTS.zoomKey) {
+                else if (key === CONSTANTS.zoomKey || key == CONSTANTS.zoomFlipKey) {
                     const topId = room.objectPropertiesPlugin.getObjectIdsUnderCursor().shift();
                     if (topId != null) {
-                        zoomedElement.src = room.objects[topId].descriptors.currentImg ?? "";
+                        const [over, under] = room.objects[topId].descriptors.currentImg == room.objects[topId].descriptors.frontImg
+                            ? [room.objects[topId].descriptors.frontImg, room.objects[topId].descriptors.backImg]
+                            : [room.objects[topId].descriptors.backImg, room.objects[topId].descriptors.frontImg];
+
+                        zoomedElement.src = (key === CONSTANTS.zoomKey) ? over : under;
                         zoomedElement.style.display = "block";
                     }
                 }
             });
 
             window.addEventListener("keyup", ({ key }) => {
-                if (key === CONSTANTS.zoomKey) {
+                if (key === CONSTANTS.zoomKey || key === CONSTANTS.zoomFlipKey) {
                     zoomedElement.style.display = "none";
                 }
             });

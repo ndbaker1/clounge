@@ -1,10 +1,11 @@
+import { MOUSE_BUTTON } from "../common";
 import type { RoomPlugin } from "types";
 
 import type { ObjectPropertiesObjectExtension, ObjectPropertiesRoomExtension } from "./objectProperties";
 import type { CursorPeerExtension } from "./peerCursors";
-import type { ViewportAnchorRoomExtension } from "./viewportAnchor";
+import type { ViewportRoomExtension } from "./viewport";
 
-import viewportAnchor from "./viewportAnchor";
+import viewport from "./viewport";
 
 type ContextOptionsMap = Map<string, ContextOptionsMap | ContextOptionHandler>;
 type ContextOptionHandler = (objectIds: number[]) => void;
@@ -18,19 +19,19 @@ export type ObjectContextMenuRoomExtension = {
 
 export default <RoomPlugin<
     CursorPeerExtension,
-    ObjectContextMenuRoomExtension & ViewportAnchorRoomExtension & ObjectPropertiesRoomExtension,
+    ObjectContextMenuRoomExtension & ViewportRoomExtension & ObjectPropertiesRoomExtension,
     ObjectPropertiesObjectExtension
 >
     >{
         name: "objectContextMenu",
-        dependencies: [viewportAnchor.name],
+        dependencies: [viewport.name],
         initialize(room) {
             const menu = document.createElement("div");
             menu.style.zIndex = String(999);
             menu.style.display = "none";
             menu.style.position = "fixed";
 
-            room.viewportAnchorPlugin.elementRef.appendChild(menu);
+            room.viewportPlugin.elementRef.appendChild(menu);
 
             // ROOM DATA INITIALIZED
             room.objectContextMenuPlugin = {
@@ -42,7 +43,7 @@ export default <RoomPlugin<
                         room.infoWindowPlugin.element.prepend(status);
 
                         window.addEventListener("mouseup", function moveObjects({ button }) {
-                            if (button === 0) { // left click
+                            if (button === MOUSE_BUTTON.LEFT) {
                                 for (const id of ids) {
                                     room.objectPropertiesPlugin.setObjectPosition(id, room.self.cursorWorld, true);
                                 }
@@ -112,7 +113,7 @@ export default <RoomPlugin<
                         room.infoWindowPlugin.element.prepend(status);
 
                         window.addEventListener("mousedown", function moveObjects({ button }) {
-                            if (button === 0) { // left click
+                            if (button === MOUSE_BUTTON.LEFT) {
                                 const selectedObjectIds = room.objectPropertiesPlugin.getObjectIdsUnderCursor();
                                 for (const selectedId of selectedObjectIds) {
                                     room.objectPropertiesPlugin.placeRelative(selectedId, id, "after", true);
