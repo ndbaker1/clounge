@@ -85,7 +85,8 @@ export type OBJECT_ID_ATTRIBUTE = "object-id";
 
 const CONSTANTS = {
     flipKey: "f",
-    zoomKey: " ",
+    zoomKey: "z",
+    zoomFlipKey: "x",
 };
 
 let zoomedElement: HTMLImageElement;
@@ -373,21 +374,21 @@ export default <RoomPlugin<
                     }
                 }
                 // Zoomed Object Preview
-                else if (key === CONSTANTS.zoomKey) {
+                else if (key === CONSTANTS.zoomKey || key == CONSTANTS.zoomFlipKey) {
                     const topId = room.objectPropertiesPlugin.getObjectIdsUnderCursor().shift();
                     if (topId != null) {
                         const [over, under] = room.objects[topId].descriptors.currentImg == room.objects[topId].descriptors.frontImg
                             ? [room.objects[topId].descriptors.frontImg, room.objects[topId].descriptors.backImg]
                             : [room.objects[topId].descriptors.backImg, room.objects[topId].descriptors.frontImg];
 
-                        zoomedElement.src = room.userEventsPlugin.getPressedKeys().has("w") ? under : over;
+                        zoomedElement.src = (key === CONSTANTS.zoomKey) ? over : under;
                         zoomedElement.style.display = "block";
                     }
                 }
             });
 
             window.addEventListener("keyup", ({ key }) => {
-                if (key === CONSTANTS.zoomKey) {
+                if (key === CONSTANTS.zoomKey || key === CONSTANTS.zoomFlipKey) {
                     zoomedElement.style.display = "none";
                 }
             });
