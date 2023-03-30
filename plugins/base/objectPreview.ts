@@ -6,14 +6,14 @@ import type { ViewportRoomExtension } from "./viewport";
 import objectProperties from "./objectProperties";
 import objectContextMenu from "./objectContextMenu";
 import viewport from "./viewport";
-import { MOUSE_BUTTON } from "../common";
 
 const CONSTANTS = {
     exitKey: "Escape",
     flipKey: "w",
+    previewKey: "q",
 };
 
-let previewOpen = false;
+let previewContainer: HTMLDivElement | null = null;
 
 export default <RoomPlugin<
     object,
@@ -25,11 +25,9 @@ export default <RoomPlugin<
         dependencies: [objectProperties.name, objectContextMenu.name, viewport.name],
         initialize(room) {
             function openPreview(ids: number[]) {
-                previewOpen = true;
                 function closeWindow() {
-                    previewContainer.remove();
-                    previewOpen = false;
-                }
+                    previewContainer?.remove();
+                } closeWindow();
 
                 function flipPreview() {
                     itemContainer.querySelectorAll("img").forEach(previewItem => {
@@ -49,21 +47,21 @@ export default <RoomPlugin<
                     }
                 });
 
-                const previewContainer = document.createElement("div");
+                previewContainer = document.createElement("div");
                 previewContainer.style.position = "fixed";
                 previewContainer.style.display = "grid";
                 previewContainer.style.borderRadius = "5px";
                 previewContainer.style.backgroundColor = "#322F3D";
                 previewContainer.style.boxShadow = "black 1px 4px 12px";
-                previewContainer.style.top = previewContainer.style.left = "50%";
-                previewContainer.style.transform = "translate(-50%, -50%)";
+                previewContainer.style.bottom = "0";
+                previewContainer.style.left = "50%";
+                previewContainer.style.transform = "translate(-50%, 0)";
 
                 const buttonContainer = document.createElement("div");
                 buttonContainer.style.display = "grid";
                 buttonContainer.style.gridAutoFlow = "column";
                 buttonContainer.style.gap = "1rem";
                 buttonContainer.style.padding = "0.2rem";
-                buttonContainer.style.height = "2rem";
                 buttonContainer.style.margin = "0.6rem";
                 previewContainer.appendChild(buttonContainer);
 
@@ -78,13 +76,13 @@ export default <RoomPlugin<
                 buttonContainer.appendChild(closeButton);
 
                 const itemContainer = document.createElement("div");
-                itemContainer.style.margin = "1rem";
+                itemContainer.style.margin = "0 1rem 1rem";
                 itemContainer.style.display = "grid";
                 itemContainer.style.gridTemplateColumns = "repeat(auto-fill, 80px)";
                 itemContainer.style.gap = "1rem";
                 itemContainer.style.overflow = "auto";
-                itemContainer.style.width = "50vw";
-                itemContainer.style.maxHeight = "50vh";
+                itemContainer.style.width = "min(90vw, 90rem)";
+                itemContainer.style.maxHeight = "min(25vh, 50rem)";
                 previewContainer.appendChild(itemContainer);
 
                 ids.forEach((id, index) => {
@@ -110,10 +108,10 @@ export default <RoomPlugin<
 
             room.objectContextMenuPlugin.menuOptions.set("preview 👀", openPreview);
 
-            window.addEventListener("mousedown", ({ ctrlKey, button }) => {
-                if (ctrlKey && button === MOUSE_BUTTON.LEFT) {
+            window.addEventListener("keydown", ({ key }) => {
+                if (key === CONSTANTS.previewKey) {
                     const selectedIds = room.objectPropertiesPlugin.getObjectIdsUnderCursor();
-                    if (selectedIds.length > 0 && !previewOpen) {
+                    if (selectedIds.length > 0) {
                         openPreview(selectedIds);
                     }
 

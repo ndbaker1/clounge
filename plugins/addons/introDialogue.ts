@@ -24,13 +24,7 @@ export default <RoomPlugin>{
             <br/> <br/>
 
             In order to load objects into the room, try out a preset or press the "Load Objects" button in the top-right.
-            Manually loading objects will prompt you for a descriptor JSON, which is an array of objects with required and optional properties.
-            It may help to visit the
-            <a
-                href="https://github.com/ndbaker1/tablesalt/blob/main/plugins/base/objectLoader.ts#L10"
-                target="_blank noreferrer"
-            >JSON example</a>
-            in the app's source code for reference.
+            It will be possible to create your own loadable object sets in the future :)
 
             <br/> <br/>
 
@@ -38,10 +32,10 @@ export default <RoomPlugin>{
             There are some default controls and shortcuts built-in already, such as:
 
             <ul>
-                <li>hold <kbd>middle-click</kbd> and drag to pan around</li>
+                <li>hold <kbd>middle-click</kbd> or <kbd>left-click</kbd> an empty space and drag to pan around</li>
                 <li>hover an object and press <kbd>f</kbd> to flip it over</li>
-                <li>hover an object and press <kbd>z</kbd> to view a close-up of it or <kbd>x</kbd> to view the same close-up flipped over</li>
-                <li>hover over objects and press <kbd>ctrl</kbd> + <kbd>left-click</kbd> to open up the preview menu</li>
+                <li>hover an object and press <kbd>z</kbd> or <kbd>x</kbd> to view a close-up of the top or bottom side</li>
+                <li>hover over objects and press <kbd>q</kbd> to open up the preview menu</li>
                 <li>hold <kbd>shift</kbd> + <kbd>left-click</kbd> and drag to move every object under the cursor</li>
             </ul>
 
