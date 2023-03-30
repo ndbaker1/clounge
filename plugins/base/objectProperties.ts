@@ -131,6 +131,7 @@ export default <RoomPlugin<
             zoomedElement.style.transform = "translate(-50%)";
             zoomedElement.style.height = "80vh";
             zoomedElement.style.display = "none";
+            zoomedElement.style.zIndex = String(999)
             room.viewportPlugin.elementRef.appendChild(zoomedElement);
 
             // ROOM DATA INITIALIZED
