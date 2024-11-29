@@ -16,5 +16,18 @@ module.exports = {
 		browser: true,
 		es2017: true,
 		node: true
-	}
+	},
+	ignorePatterns: [
+		'.DS_Store',
+		'node_modules',
+		'/build',
+		'/.svelte-kit',
+		'/package',
+		'.env',
+		'.env.*',
+		'!.env.example',
+		'pnpm-lock.yaml',
+		'package-lock.json',
+		'yarn.lock'
+	]
 };
